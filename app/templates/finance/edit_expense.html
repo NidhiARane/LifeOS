@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Expense - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Edit Expense</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('finance.edit_expense', expense_id=expense.id) }}" novalidate>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="title" name="title"
+                                   value="{{ expense.title }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" name="amount"
+                                       value="{{ expense.amount }}" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Category</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if category.id == expense.category_id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="expense_date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="expense_date" name="expense_date"
+                                   value="{{ expense.expense_date.strftime('%Y-%m-%d') }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Notes</label>
+                            <textarea class="form-control" id="description" name="description"
+                                      rows="3">{{ expense.description }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Update Expense
+                            </button>
+                            <a href="{{ url_for('finance.expenses') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

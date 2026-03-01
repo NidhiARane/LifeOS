@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}All Expenses - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2"><i class="fas fa-receipt"></i> All Expenses</h1>
+                <a href="{{ url_for('finance.add_expense') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Expense
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('finance.expenses') }}" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Sort By</label>
+                            <select class="form-select" name="sort">
+                                <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Newest First</option>
+                                <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Oldest First</option>
+                                <option value="amount_desc" {% if sort_by == 'amount_desc' %}selected{% endif %}>Highest Amount</option>
+                                <option value="amount_asc" {% if sort_by == 'amount_asc' %}selected{% endif %}>Lowest Amount</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expenses Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if expenses.items %}
+                                {% for expense in expenses.items %}
+                                <tr>
+                                    <td>{{ expense.expense_date.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ expense.category.color }}">
+                                            <i class="{{ expense.category.icon }}"></i> {{ expense.category.name }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ expense.title }}</strong><br>
+                                        <small class="text-muted">{{ expense.description|truncate(50) }}</small>
+                                    </td>
+                                    <td><strong>${{ "%.2f"|format(expense.amount) }}</strong></td>
+                                    <td>
+                                        <a href="{{ url_for('finance.edit_expense', expense_id=expense.id) }}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('finance.delete_expense', expense_id=expense.id) }}"
+                                              style="display:inline;" onsubmit="return confirm('Delete this expense?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                    No expenses found
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if expenses.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if expenses.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('finance.expenses', page=1, category=selected_category, sort=sort_by) }}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('finance.expenses', page=expenses.prev_num, category=selected_category, sort=sort_by) }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in expenses.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == expenses.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('finance.expenses', page=page_num, category=selected_category, sort=sort_by) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if expenses.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('finance.expenses', page=expenses.next_num, category=selected_category, sort=sort_by) }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('finance.expenses', page=expenses.pages, category=selected_category, sort=sort_by) }}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

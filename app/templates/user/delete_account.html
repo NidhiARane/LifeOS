@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Account - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Delete Account</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-danger" role="alert">
+                        <strong><i class="fas fa-warning"></i> Warning:</strong> This action is permanent and cannot be undone.
+                        All your data will be permanently deleted from our servers.
+                    </div>
+
+                    <h6 class="mb-3">This will delete:</h6>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><i class="fas fa-times-circle text-danger"></i> Your profile and personal data</li>
+                        <li class="mb-2"><i class="fas fa-times-circle text-danger"></i> All your expenses and financial records</li>
+                        <li class="mb-2"><i class="fas fa-times-circle text-danger"></i> Your meal logs and nutrition data</li>
+                        <li class="mb-2"><i class="fas fa-times-circle text-danger"></i> All your habits and goals</li>
+                        <li><i class="fas fa-times-circle text-danger"></i> Your chat history</li>
+                    </ul>
+
+                    <form method="POST" action="{{ url_for('user.delete_account') }}" novalidate onsubmit="return confirm('Are you absolutely sure? This cannot be undone!');">
+                        <!-- Password Confirmation -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Confirm your password to delete account</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       placeholder="Enter your password" required>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <button type="submit" class="btn btn-danger btn-lg w-100 mb-2">
+                            <i class="fas fa-trash"></i> Permanently Delete Account
+                        </button>
+                        <a href="{{ url_for('user.settings') }}" class="btn btn-secondary btn-lg w-100">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternative Options -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="fas fa-lightbulb"></i> Alternative Options</h6>
+                    <p class="text-muted small mb-0">
+                        Instead of deleting your account, you can:
+                    </p>
+                    <ul class="text-muted small mt-2">
+                        <li>Deactivate your account temporarily</li>
+                        <li>Download your data before deleting</li>
+                        <li>Contact support for assistance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

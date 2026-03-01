@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Login - LifeOS{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8">
+                <div class="card shadow border-0">
+                    <!-- Card Header -->
+                    <div class="card-header bg-gradient-primary text-white text-center py-4">
+                        <h2 class="mb-0">
+                            <i class="fas fa-heart-pulse"></i> LifeOS
+                        </h2>
+                        <p class="text-white-50 mb-0 mt-2">Sign In to Your Account</p>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body p-4">
+                        <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                            <!-- Username/Email -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required autofocus>
+                                </div>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                                </div>
+                            </div>
+
+                            <!-- Remember Me -->
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="remember_me" name="remember_me">
+                                    <label class="form-check-label" for="remember_me">
+                                        Remember me
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">
+                                <i class="fas fa-sign-in-alt"></i> Sign In
+                            </button>
+                        </form>
+
+                        <!-- Links -->
+                        <div class="text-center mb-3">
+                            <a href="{{ url_for('auth.forgot_password') }}" class="text-muted text-decoration-none">
+                                Forgot your password?
+                            </a>
+                        </div>
+
+                        <hr>
+
+                        <!-- Register Link -->
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Don't have an account?
+                                <a href="{{ url_for('auth.register') }}" class="text-primary fw-bold">Register here</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Benefits -->
+                <div class="mt-4 text-center text-muted">
+                    <p class="small">
+                        <i class="fas fa-shield-alt text-success"></i> Secure Login |
+                        <i class="fas fa-lock text-info"></i> Encrypted Data |
+                        <i class="fas fa-user-shield text-warning"></i> Your Privacy
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.form-control, .input-group-text {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+</style>
+{% endblock %}
+

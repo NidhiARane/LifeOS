@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""Minimal Flask test"""
+
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return "Hello from LifeOS! Server is running."
+
+if __name__ == '__main__':
+    print("Starting minimal Flask test...")
+    app.run(host='127.0.0.1', port=5000, debug=False)
+

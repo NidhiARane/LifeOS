@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2"><i class="fas fa-user-edit"></i> Edit Profile</h1>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Profile Form -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('user.edit_profile') }}" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name"
+                                       value="{{ current_user.first_name or '' }}" placeholder="John">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name"
+                                       value="{{ current_user.last_name or '' }}" placeholder="Doe">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="3"
+                                          placeholder="Tell us about yourself">{{ current_user.bio or '' }}</textarea>
+                                <small class="text-muted">Write something about yourself</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone"
+                                       value="{{ current_user.phone or '' }}" placeholder="+1 (555) 123-4567">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location"
+                                       value="{{ current_user.location or '' }}" placeholder="City, Country">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h5 class="mt-4 mb-3"><i class="fas fa-bullseye"></i> Goals & Preferences</h5>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="monthly_budget" class="form-label">Monthly Budget</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="monthly_budget" name="monthly_budget"
+                                           value="{{ current_user.monthly_budget or '' }}" placeholder="5000" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="weight_goal" class="form-label">Weight Goal (kg)</label>
+                                <input type="number" class="form-control" id="weight_goal" name="weight_goal"
+                                       value="{{ current_user.weight_goal or '' }}" placeholder="70" step="0.1">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="savings_goal" class="form-label">Savings Goal</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="savings_goal" name="savings_goal"
+                                           value="{{ current_user.savings_goal or '' }}" placeholder="10000" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="daily_calorie_goal" class="form-label">Daily Calorie Goal</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="daily_calorie_goal" name="daily_calorie_goal"
+                                           value="{{ current_user.daily_calorie_goal or '' }}" placeholder="2000">
+                                    <span class="input-group-text">kcal</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="daily_protein_goal" class="form-label">Daily Protein Goal</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="daily_protein_goal" name="daily_protein_goal"
+                                           value="{{ current_user.daily_protein_goal or '' }}" placeholder="50" step="0.1">
+                                    <span class="input-group-text">g</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a href="{{ url_for('user.profile') }}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-info-circle"></i> Tips</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <small>Complete all fields to get better AI recommendations</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <small>Your goals help track your progress</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <small>Update your preferences anytime</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: lifeos_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: lifeos_dev
+      MYSQL_USER: lifeos_user
+      MYSQL_PASSWORD: lifeos_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - lifeos_network
+
+  # Flask Application
+  web:
+    build: .
+    container_name: lifeos_app
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: run.py
+      SECRET_KEY: your-secret-key-change-in-production
+      DATABASE_URL: mysql+pymysql://lifeos_user:lifeos_password@mysql:3306/lifeos_dev
+      GEMINI_API_KEY: your-google-gemini-api-key
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    networks:
+      - lifeos_network
+    command: flask run --host=0.0.0.0
+
+volumes:
+  mysql_data:
+
+networks:
+  lifeos_network:
+    driver: bridge
+
