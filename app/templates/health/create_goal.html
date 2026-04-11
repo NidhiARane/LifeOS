@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Create Goal - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{{ url_for('health.goals_dashboard') }}" class="btn btn-outline-secondary mb-3">
+                    <i class="fas fa-arrow-left"></i> Back to Goals
+                </a>
+                <h1 class="h2"><i class="fas fa-bullseye"></i> Create New Goal</h1>
+                <p class="text-muted">Set an ambitious goal and track your progress</p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <!-- Goal Title -->
+                        <div class="mb-4">
+                            <label for="goal_title" class="form-label fw-semibold">
+                                <i class="fas fa-heading"></i> Goal Title *
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="goal_title" name="goal_title"
+                                   placeholder="e.g., Lose 10kg, Save $5000, Read 12 books" required>
+                            <small class="text-muted">What's your goal?</small>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Why is this goal important? What does success look like?"></textarea>
+                        </div>
+
+                        <!-- Row: Category and Priority -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label fw-semibold">
+                                    <i class="fas fa-tag"></i> Category *
+                                </label>
+                                <select class="form-select form-select-lg" id="category" name="category" required>
+                                    <option value="">Select a category...</option>
+                                    <option value="health">❤️ Health & Wellness</option>
+                                    <option value="financial">💰 Financial</option>
+                                    <option value="learning">📚 Learning</option>
+                                    <option value="fitness">💪 Fitness</option>
+                                    <option value="career">💼 Career</option>
+                                    <option value="social">👥 Social</option>
+                                    <option value="personal">🎯 Personal Development</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="priority" class="form-label fw-semibold">
+                                    <i class="fas fa-signal"></i> Priority
+                                </label>
+                                <select class="form-select form-select-lg" id="priority" name="priority">
+                                    <option value="low">⚪ Low Priority</option>
+                                    <option value="medium" selected>🟡 Medium Priority</option>
+                                    <option value="high">🔴 High Priority</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Target Value and Unit -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="target_value" class="form-label fw-semibold">
+                                    <i class="fas fa-chart-bar"></i> Target Value *
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="target_value"
+                                       name="target_value" placeholder="e.g., 10, 5000, 12" step="0.1" required>
+                                <small class="text-muted">The number you want to achieve</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="unit" class="form-label fw-semibold">
+                                    <i class="fas fa-tag"></i> Unit *
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="unit" name="unit"
+                                       placeholder="e.g., kg, $, books, hours" required>
+                                <small class="text-muted">What's the measurement?</small>
+                            </div>
+                        </div>
+
+                        <!-- Target Date -->
+                        <div class="mb-4">
+                            <label for="target_date" class="form-label fw-semibold">
+                                <i class="fas fa-calendar"></i> Target Date
+                            </label>
+                            <input type="date" class="form-control form-control-lg" id="target_date" name="target_date">
+                            <small class="text-muted">When do you want to achieve this goal?</small>
+                        </div>
+
+                        <!-- Example Goals -->
+                        <div class="alert alert-light border">
+                            <strong><i class="fas fa-lightbulb text-warning"></i> Example Goals:</strong>
+                            <ul class="mb-0 mt-2 small">
+                                <li>Lose 10kg - Category: Health - Unit: kg</li>
+                                <li>Save $5000 - Category: Financial - Unit: $</li>
+                                <li>Read 12 books - Category: Learning - Unit: books</li>
+                                <li>Run 100km total - Category: Fitness - Unit: km</li>
+                            </ul>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{{ url_for('health.goals_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check"></i> Create Goal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+document.querySelectorAll('.needs-validation').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}
+

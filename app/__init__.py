@@ -45,6 +45,7 @@ def create_app(config_name='development'):
     from app.routes.api import api_bp
     from app.routes.finance import finance_bp
     from app.routes.grocery import grocery_bp
+    from app.routes.health import health_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
@@ -52,6 +53,7 @@ def create_app(config_name='development'):
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(finance_bp)
     app.register_blueprint(grocery_bp)
+    app.register_blueprint(health_bp)
 
     # Register main route
     from app.routes.main import main_bp
