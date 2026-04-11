@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}AI Insights - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-lightbulb"></i> AI-Generated Insights</h1>
+                    <p class="text-muted">Intelligent analysis of your life data</p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('ai.chat_dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-comments"></i> Chat
+                    </a>
+                    <a href="{{ url_for('ai.reports_dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-file-alt"></i> Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Insights -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Financial Insights</h5>
+                </div>
+                <div class="card-body">
+                    {% if financial.error %}
+                        <div class="alert alert-info">{{ financial.error }}</div>
+                    {% else %}
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-muted">Total Spent (30 days)</small>
+                                <h4 class="mb-0">${{ financial.total_spent }}</h4>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Daily Average</small>
+                                <h4 class="mb-0">${{ financial.average_daily }}</h4>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <h6>Top Categories</h6>
+                        {% if financial.top_categories %}
+                            <div class="list-group list-group-flush">
+                                {% for category in financial.top_categories %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                        <small>{{ category.name }}</small>
+                                        <strong>${{ category.amount }}</strong>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-3">
+                            <small class="text-muted">Spending Trend:</small>
+                            <span class="badge bg-info">{{ financial.trend }}</span>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Expenses Logged:</small>
+                            <span class="badge bg-secondary">{{ financial.expense_count }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Insights -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat"></i> Health Insights</h5>
+                </div>
+                <div class="card-body">
+                    {% if health.error %}
+                        <div class="alert alert-info">{{ health.error }}</div>
+                    {% else %}
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-muted">Avg Daily Calories</small>
+                                <h4 class="mb-0">{{ health.avg_daily_calories | int }} kcal</h4>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Avg Daily Protein</small>
+                                <h4 class="mb-0">{{ health.avg_daily_protein }}g</h4>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-muted">Active Habits</small>
+                                <h5 class="mb-0">{{ health.active_habits }}</h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Consistency Score</small>
+                                <h5 class="mb-0">{{ health.habit_consistency }}%</h5>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <small class="text-muted">Overall Health Status:</small>
+                            <h6 class="mb-0">
+                                {% if health.health_status == 'Good' %}
+                                    <span class="badge bg-success">{{ health.health_status }} 💪</span>
+                                {% elif health.health_status == 'Fair' %}
+                                    <span class="badge bg-warning">{{ health.health_status }} ⚠️</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ health.health_status }} 🔴</span>
+                                {% endif %}
+                            </h6>
+                        </div>
+
+                        <div class="mt-2">
+                            <small class="text-muted">Meals Logged:</small>
+                            <span class="badge bg-secondary">{{ health.meals_logged }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Habit Analysis -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Habit Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if habits.error %}
+                        <div class="alert alert-info">{{ habits.error }}</div>
+                    {% else %}
+                        {% if habits.total_habits > 0 %}
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h4>{{ habits.total_habits }}</h4>
+                                        <small class="text-muted">Total Habits</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h4>{{ habits.average_completion }}%</h4>
+                                        <small class="text-muted">Avg Completion</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h6>Individual Habit Performance</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Habit</th>
+                                            <th>Completion Rate</th>
+                                            <th>Current Streak</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for habit in habits.habits %}
+                                            <tr>
+                                                <td>{{ habit.name }}</td>
+                                                <td>
+                                                    <div class="progress" style="height: 20px;">
+                                                        {% set color = 'success' if habit.completion_rate >= 80 else 'warning' if habit.completion_rate >= 60 else 'danger' %}
+                                                        <div class="progress-bar bg-{{ color }}" style="width: {{ habit.completion_rate }}%">
+                                                            {{ habit.completion_rate }}%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ habit.current_streak }} days 🔥</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{% if habit.status == 'Excellent' %}success{% elif habit.status == 'Good' %}info{% elif habit.status == 'Fair' %}warning{% else %}danger{% endif %}">
+                                                        {{ habit.status }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> No habits yet. Start by creating a habit in the Habits section!
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Prediction -->
+    {% if expense_prediction and not expense_prediction.error %}
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-crystal-ball"></i> Expense Prediction</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Predicted Daily Expense (Next 30 Days)</h6>
+                        <h3 class="mb-3">${{ expense_prediction.predicted_daily_expense }}</h3>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted">Based on</small>
+                                <p class="mb-0"><strong>{{ expense_prediction.based_on_days }} days</strong> of data</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Prediction Confidence</small>
+                                <p class="mb-0"><strong>{{ expense_prediction.confidence }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.badge {
+    font-size: 0.85rem;
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+</style>
+{% endblock %}
+

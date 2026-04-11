@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Life Score - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-star"></i> Your Life Score</h1>
+                    <p class="text-muted">Measure your progress across Health, Finance, and Habits</p>
+                </div>
+                <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Score -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5 text-center">
+                    <h1 class="display-1 font-weight-bold mb-3">
+                        {% if life_score.overall_score >= 80 %}
+                            <span class="text-success">{{ life_score.overall_score }}</span>
+                        {% elif life_score.overall_score >= 60 %}
+                            <span class="text-warning">{{ life_score.overall_score }}</span>
+                        {% else %}
+                            <span class="text-danger">{{ life_score.overall_score }}</span>
+                        {% endif %}
+                    </h1>
+                    <h4 class="mb-3">Overall Life Score</h4>
+                    <p class="text-muted lead">
+                        {% if life_score.overall_score >= 80 %}
+                            Excellent! You're maintaining great discipline across all areas. 🎉
+                        {% elif life_score.overall_score >= 60 %}
+                            Good progress! Keep focusing on improving your weakest areas. 💪
+                        {% else %}
+                            There's room for improvement. Focus on one area at a time! 🚀
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Component Scores -->
+    <div class="row g-4 mb-4">
+        <!-- Health Score -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-heart"></i> Health Discipline</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <h1 class="display-3 text-danger">{{ life_score.health_score }}</h1>
+                        <small class="text-muted">Out of 100</small>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        {% set color = 'success' if life_score.health_score >= 80 else 'warning' if life_score.health_score >= 60 else 'danger' %}
+                        <div class="progress-bar bg-{{ color }}" style="width: {{ life_score.health_score }}%">
+                            {{ life_score.health_score }}%
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Based on meal logging consistency and habit adherence
+                    </p>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        {% if life_score.health_score >= 80 %}
+                            <i class="fas fa-check-circle text-success"></i> Excellent health tracking
+                        {% elif life_score.health_score >= 60 %}
+                            <i class="fas fa-info-circle text-warning"></i> Good progress, keep logging
+                        {% else %}
+                            <i class="fas fa-exclamation-circle text-danger"></i> Log more meals
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Score -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Financial Discipline</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <h1 class="display-3 text-success">{{ life_score.financial_score }}</h1>
+                        <small class="text-muted">Out of 100</small>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        {% set color = 'success' if life_score.financial_score >= 80 else 'warning' if life_score.financial_score >= 60 else 'danger' %}
+                        <div class="progress-bar bg-{{ color }}" style="width: {{ life_score.financial_score }}%">
+                            {{ life_score.financial_score }}%
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Based on budget adherence and expense tracking
+                    </p>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        {% if life_score.financial_score >= 80 %}
+                            <i class="fas fa-check-circle text-success"></i> Excellent budget management
+                        {% elif life_score.financial_score >= 60 %}
+                            <i class="fas fa-info-circle text-warning"></i> Good spending control
+                        {% else %}
+                            <i class="fas fa-exclamation-circle text-danger"></i> Monitor expenses closely
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habit Score -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Habit Consistency</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <h1 class="display-3 text-primary">{{ life_score.habit_score }}</h1>
+                        <small class="text-muted">Out of 100</small>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        {% set color = 'success' if life_score.habit_score >= 80 else 'warning' if life_score.habit_score >= 60 else 'danger' %}
+                        <div class="progress-bar bg-{{ color }}" style="width: {{ life_score.habit_score }}%">
+                            {{ life_score.habit_score }}%
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Based on overall habit completion rates
+                    </p>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">
+                        {% if life_score.habit_score >= 80 %}
+                            <i class="fas fa-check-circle text-success"></i> Strong habit consistency
+                        {% elif life_score.habit_score >= 60 %}
+                            <i class="fas fa-info-circle text-warning"></i> Building momentum
+                        {% else %}
+                            <i class="fas fa-exclamation-circle text-danger"></i> Focus on daily check-ins
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Breakdown -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Score Composition</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Your Life Score is calculated by equally weighing three key areas:
+                    </p>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Health Discipline</h6>
+                                    <small class="text-muted">33.3%</small>
+                                </div>
+                                <span class="badge bg-danger">{{ life_score.health_discipline }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" style="width: {{ life_score.health_discipline }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Financial Discipline</h6>
+                                    <small class="text-muted">33.3%</small>
+                                </div>
+                                <span class="badge bg-success">{{ life_score.financial_discipline }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: {{ life_score.financial_discipline }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Habit Consistency</h6>
+                                    <small class="text-muted">33.4%</small>
+                                </div>
+                                <span class="badge bg-primary">{{ life_score.habit_consistency }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" style="width: {{ life_score.habit_consistency }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-lightbulb"></i> How to Improve Your Life Score</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <h6 class="text-danger">Boost Health Discipline</h6>
+                            <ul class="small mb-0">
+                                <li>Log meals consistently</li>
+                                <li>Complete your health habits</li>
+                                <li>Track nutrition details</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-success">Boost Financial Discipline</h6>
+                            <ul class="small mb-0">
+                                <li>Stay within budget</li>
+                                <li>Log all expenses</li>
+                                <li>Track spending trends</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-primary">Boost Habit Consistency</h6>
+                            <ul class="small mb-0">
+                                <li>Daily check-ins</li>
+                                <li>Build streaks</li>
+                                <li>Create meaningful habits</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.display-1, .display-3 {
+    line-height: 1;
+    font-weight: 700;
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.05);
+    height: 8px;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+}
+</style>
+{% endblock %}
+

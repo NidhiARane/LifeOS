@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+                    <p class="text-muted">Your comprehensive life analytics and insights</p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('analytics.life_score_dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-star"></i> Life Score
+                    </a>
+                    <a href="{{ url_for('analytics.manage_budget') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-cog"></i> Budget Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Life Score Card -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <h1 class="display-1 font-weight-bold mb-3">
+                                {% if life_score.overall_score >= 80 %}
+                                    <span class="text-success">{{ life_score.overall_score }}</span>
+                                {% elif life_score.overall_score >= 60 %}
+                                    <span class="text-warning">{{ life_score.overall_score }}</span>
+                                {% else %}
+                                    <span class="text-danger">{{ life_score.overall_score }}</span>
+                                {% endif %}
+                            </h1>
+                            <p class="text-muted mb-0">Your Life Score</p>
+                            <small class="text-muted">Based on your last 30 days</small>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <h6 class="mb-2"><i class="fas fa-heart text-danger"></i> Health</h6>
+                                        <h4 class="mb-0">{{ life_score.health_score }}</h4>
+                                        <small class="text-muted">Discipline Score</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <h6 class="mb-2"><i class="fas fa-dollar-sign text-success"></i> Finance</h6>
+                                        <h4 class="mb-0">{{ life_score.financial_score }}</h4>
+                                        <small class="text-muted">Discipline Score</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <h6 class="mb-2"><i class="fas fa-check-circle text-primary"></i> Habits</h6>
+                                        <h4 class="mb-0">{{ life_score.habit_score }}</h4>
+                                        <small class="text-muted">Consistency Score</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Expense Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Financial Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if not expense_summary.error %}
+                        <div class="mb-3">
+                            <small class="text-muted">Total Spent</small>
+                            <h4 class="mb-0">${{ expense_summary.total_spent }}</h4>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Budget Limit</small>
+                            <h6 class="mb-0">${{ expense_summary.budget_limit }}</h6>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Remaining</small>
+                            <h6 class="mb-0 {% if expense_summary.remaining >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                ${{ expense_summary.remaining }}
+                            </h6>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            {% set color = 'success' if expense_summary.percentage <= 80 else 'warning' if expense_summary.percentage <= 100 else 'danger' %}
+                            <div class="progress-bar bg-{{ color }}" style="width: {{ expense_summary.percentage }}%">
+                                {{ expense_summary.percentage }}%
+                            </div>
+                        </div>
+                        <small class="text-muted mt-2">Status: <strong>{{ expense_summary.status }}</strong></small>
+                    {% else %}
+                        <p class="text-muted">No expense data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat"></i> Health Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if not health_summary.error %}
+                        <div class="mb-3">
+                            <small class="text-muted">Avg Daily Calories</small>
+                            <h4 class="mb-0">{{ health_summary.avg_calories | int }} kcal</h4>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Avg Daily Protein</small>
+                            <h6 class="mb-0">{{ health_summary.avg_protein }}g</h6>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Meals Logged</small>
+                            <h6 class="mb-0">{{ health_summary.total_meals }}</h6>
+                        </div>
+                        <a href="{{ url_for('analytics.health_analytics') }}" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="fas fa-chart-bar"></i> View Health Analytics
+                        </a>
+                    {% else %}
+                        <p class="text-muted">No health data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Habit Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Habit Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if not habit_progress.error %}
+                        <div class="mb-3">
+                            <small class="text-muted">Total Habits</small>
+                            <h4 class="mb-0">{{ habit_progress.total_habits }}</h4>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Avg Completion</small>
+                            <h6 class="mb-0">{{ habit_progress.average_completion }}%</h6>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            {% set color = 'success' if habit_progress.average_completion >= 80 else 'warning' if habit_progress.average_completion >= 60 else 'danger' %}
+                            <div class="progress-bar bg-{{ color }}" style="width: {{ habit_progress.average_completion }}%">
+                                {{ habit_progress.average_completion }}%
+                            </div>
+                        </div>
+                        <a href="{{ url_for('analytics.habits_analytics') }}" class="btn btn-sm btn-outline-primary w-100 mt-3">
+                            <i class="fas fa-chart-bar"></i> View Habit Analytics
+                        </a>
+                    {% else %}
+                        <p class="text-muted">No habit data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3 mb-4">
+        <!-- Daily Expenses Chart -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> Daily Expenses (Last 30 Days)</h5>
+                        <a href="{{ url_for('analytics.expenses_analytics') }}" class="btn btn-sm btn-outline-primary">
+                            View More
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="expenseChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Breakdown Chart -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-pie-chart"></i> Spending by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Calories Chart -->
+    <div class="row g-3">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-area"></i> Calories & Protein (Last 30 Days)</h5>
+                        <a href="{{ url_for('analytics.health_analytics') }}" class="btn btn-sm btn-outline-primary">
+                            View More
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="calorieChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.display-1 {
+    line-height: 1;
+    font-size: 3.5rem;
+    font-weight: 700;
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+canvas {
+    max-height: 300px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+// Daily Expenses Chart
+{% if daily_expenses and not daily_expenses.error %}
+const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+new Chart(expenseCtx, {
+    type: 'line',
+    data: {
+        labels: {{ daily_expenses.dates | tojson }},
+        datasets: [{
+            label: 'Daily Expenses',
+            data: {{ daily_expenses.amounts | tojson }},
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#28a745',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toFixed(0);
+                    }
+                }
+            }
+        }
+    }
+});
+{% endif %}
+
+// Category Breakdown Chart
+{% if category_breakdown and not category_breakdown.error %}
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ category_breakdown.labels | tojson }},
+        datasets: [{
+            data: {{ category_breakdown.data | tojson }},
+            backgroundColor: [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+            ],
+            borderColor: '#fff',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return '$' + context.parsed.toFixed(2);
+                    }
+                }
+            }
+        }
+    }
+});
+{% endif %}
+
+// Daily Calories Chart
+{% if daily_calories and not daily_calories.error %}
+const calorieCtx = document.getElementById('calorieChart').getContext('2d');
+new Chart(calorieCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ daily_calories.dates | tojson }},
+        datasets: [
+            {
+                label: 'Calories',
+                data: {{ daily_calories.calories | tojson }},
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                yAxisID: 'y'
+            },
+            {
+                label: 'Protein (g)',
+                data: {{ daily_calories.protein | tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                yAxisID: 'y1'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Calories'
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Protein (g)'
+                },
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
+

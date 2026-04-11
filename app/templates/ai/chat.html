@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-robot"></i> LifeOS AI Assistant</h1>
+                    <p class="text-muted">Your personal AI-powered life advisor</p>
+                </div>
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('ai.insights_dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line"></i> Insights
+                    </a>
+                    <a href="{{ url_for('ai.reports_dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-file-alt"></i> Reports
+                    </a>
+                    <a href="{{ url_for('ai.chat_history') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-history"></i> History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Chat Messages -->
+            <div class="card border-0 shadow-sm" style="height: 600px; overflow-y: auto;">
+                <div class="card-body" id="chat-messages">
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-robot fa-3x mb-3"></i>
+                        <p>👋 Hi! I'm your LifeOS AI Assistant.</p>
+                        <p>Ask me about your finances, health, habits, or goals!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic Selection -->
+            <div class="mt-3">
+                <label class="form-label small">Chat Topic:</label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="topic" id="topic-general" value="general" checked>
+                    <label class="btn btn-outline-secondary" for="topic-general">
+                        <i class="fas fa-comment"></i> General
+                    </label>
+
+                    <input type="radio" class="btn-check" name="topic" id="topic-finance" value="finance">
+                    <label class="btn btn-outline-secondary" for="topic-finance">
+                        <i class="fas fa-dollar-sign"></i> Finance
+                    </label>
+
+                    <input type="radio" class="btn-check" name="topic" id="topic-health" value="health">
+                    <label class="btn btn-outline-secondary" for="topic-health">
+                        <i class="fas fa-heart"></i> Health
+                    </label>
+
+                    <input type="radio" class="btn-check" name="topic" id="topic-habits" value="habits">
+                    <label class="btn btn-outline-secondary" for="topic-habits">
+                        <i class="fas fa-check-circle"></i> Habits
+                    </label>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="input-group mt-3">
+                <input type="text" class="form-control form-control-lg" id="message-input"
+                       placeholder="Ask me anything about your life..." autocomplete="off">
+                <button class="btn btn-primary btn-lg" id="send-btn" type="button">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+
+            <!-- Quick Questions -->
+            <div class="mt-3">
+                <small class="text-muted">Quick questions:</small>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <button class="btn btn-sm btn-outline-info quick-question">
+                        How can I save more money?
+                    </button>
+                    <button class="btn btn-sm btn-outline-info quick-question">
+                        What are my habit trends?
+                    </button>
+                    <button class="btn btn-sm btn-outline-info quick-question">
+                        How's my health looking?
+                    </button>
+                    <button class="btn btn-sm btn-outline-info quick-question">
+                        What should I focus on?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+#chat-messages {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    margin-bottom: 15px;
+    animation: slideIn 0.3s ease;
+}
+
+.message.user {
+    align-self: flex-end;
+    max-width: 70%;
+}
+
+.message.assistant {
+    align-self: flex-start;
+    max-width: 70%;
+}
+
+.message-bubble {
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-wrap: break-word;
+}
+
+.message.user .message-bubble {
+    background-color: #007bff;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.assistant .message-bubble {
+    background-color: white;
+    color: #333;
+    border: 1px solid #ddd;
+    border-bottom-left-radius: 4px;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quick-question {
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.quick-question:hover {
+    transform: translateY(-2px);
+}
+
+#send-btn:hover {
+    transform: scale(1.05);
+}
+
+#message-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const chatMessages = document.getElementById('chat-messages');
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('send-btn');
+const quickQuestions = document.querySelectorAll('.quick-question');
+
+// Load existing messages
+fetch('/ai/api/chat-history')
+    .then(response => response.json())
+    .then(data => {
+        // Clear placeholder
+        chatMessages.innerHTML = '';
+        // Display messages
+        data.forEach(msg => displayMessage(msg.content, msg.message_type, msg.created_at));
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    })
+    .catch(error => console.error('Error loading messages:', error));
+
+function displayMessage(content, type, timestamp) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    messageDiv.innerHTML = `
+        <div class="message-bubble">${escapeHtml(content)}</div>
+        <div class="message-time">${new Date(timestamp).toLocaleTimeString()}</div>
+    `;
+    chatMessages.appendChild(messageDiv);
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function sendMessage() {
+    const message = messageInput.value.trim();
+    const topic = document.querySelector('input[name="topic"]:checked').value;
+
+    if (!message) return;
+
+    // Display user message
+    displayMessage(message, 'user', new Date().toISOString());
+    messageInput.value = '';
+    sendBtn.disabled = true;
+
+    // Send to server
+    fetch('/ai/api/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            message: message,
+            topic: topic
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            displayMessage(data.response, 'assistant', data.timestamp);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            displayMessage('Error: ' + (data.error || 'Unknown error'), 'assistant', new Date().toISOString());
+        }
+    })
+    .catch(error => {
+        displayMessage('Error connecting to AI: ' + error.message, 'assistant', new Date().toISOString());
+    })
+    .finally(() => {
+        sendBtn.disabled = false;
+        messageInput.focus();
+    });
+}
+
+// Event listeners
+sendBtn.addEventListener('click', sendMessage);
+messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Quick questions
+quickQuestions.forEach(btn => {
+    btn.addEventListener('click', () => {
+        messageInput.value = btn.textContent;
+        messageInput.focus();
+    });
+});
+
+// Auto-scroll to bottom
+const observer = new MutationObserver(() => {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+observer.observe(chatMessages, { childList: true });
+</script>
+{% endblock %}
+

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Budget Settings - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-cog"></i> Budget Settings</h1>
+                    <p class="text-muted">Configure your monthly budget and alert thresholds</p>
+                </div>
+                <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Form -->
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('analytics.manage_budget') }}" class="needs-validation">
+                        <!-- Monthly Limit -->
+                        <div class="mb-4">
+                            <label for="monthly_limit" class="form-label fw-semibold">
+                                <i class="fas fa-dollar-sign"></i> Monthly Budget Limit
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">$</span>
+                                <input type="number"
+                                       class="form-control"
+                                       id="monthly_limit"
+                                       name="monthly_limit"
+                                       value="{{ budget.monthly_limit }}"
+                                       step="0.01"
+                                       min="0"
+                                       required>
+                                <span class="input-group-text">/month</span>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                Set your total monthly spending limit. You'll receive warnings if you approach this amount.
+                            </small>
+                        </div>
+
+                        <!-- Alert Threshold -->
+                        <div class="mb-4">
+                            <label for="alert_threshold" class="form-label fw-semibold">
+                                <i class="fas fa-bell"></i> Alert Threshold
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <input type="number"
+                                       class="form-control"
+                                       id="alert_threshold"
+                                       name="alert_threshold"
+                                       value="{{ budget.alert_threshold }}"
+                                       step="1"
+                                       min="0"
+                                       max="100"
+                                       required>
+                                <span class="input-group-text">% of budget</span>
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                You'll receive an alert when spending reaches this percentage of your budget (default: 90%).
+                            </small>
+                        </div>
+
+                        <!-- Current Status -->
+                        <div class="alert alert-info mb-4">
+                            <h6 class="alert-heading mb-2"><i class="fas fa-info-circle"></i> Current Settings</h6>
+                            <ul class="mb-0 small">
+                                <li><strong>Monthly Limit:</strong> ${{ budget.monthly_limit }}</li>
+                                <li><strong>Alert at:</strong> {{ budget.alert_threshold }}% (${{ (budget.monthly_limit * budget.alert_threshold / 100) | round(2) }})</li>
+                                <li><strong>Last Updated:</strong> {{ budget.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</li>
+                            </ul>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Save Budget Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-question-circle"></i> Budget Tips</h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 py-2">
+                            <strong>Start Conservative:</strong> If unsure, set a budget 10-20% below your typical spending to build discipline.
+                        </div>
+                        <div class="list-group-item px-0 py-2">
+                            <strong>Track Everything:</strong> Log all expenses to get accurate budget tracking and insights.
+                        </div>
+                        <div class="list-group-item px-0 py-2">
+                            <strong>Use Alerts:</strong> Set alert threshold to 80-90% to have time to adjust spending.
+                        </div>
+                        <div class="list-group-item px-0 py-2">
+                            <strong>Review Weekly:</strong> Check your progress regularly to catch overspending early.
+                        </div>
+                        <div class="list-group-item px-0 py-2">
+                            <strong>Adjust Monthly:</strong> Review and adjust your budget based on actual spending patterns.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.input-group-lg .input-group-text {
+    font-weight: 600;
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+</style>
+{% endblock %}
+

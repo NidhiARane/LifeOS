@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}AI Reports - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-file-alt"></i> Weekly AI Reports</h1>
+                    <p class="text-muted">AI-generated insights and recommendations</p>
+                </div>
+                <form method="POST" action="{{ url_for('ai.generate_report') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus"></i> Generate New Report
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports List -->
+    {% if reports.items %}
+        <div class="row g-3">
+            {% for report in reports.items %}
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm report-card h-100">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1">{{ report.title }}</h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        {% if report.week_start and report.week_end %}
+                                            {{ report.week_start.strftime('%b %d') }} - {{ report.week_end.strftime('%b %d, %Y') }}
+                                        {% else %}
+                                            {{ report.report_date.strftime('%B %d, %Y') }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <span class="badge bg-info">{{ report.report_type.capitalize() }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Report Preview -->
+                            <div class="report-preview mb-3">
+                                {{ report.content[:200] }}...
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('ai.view_report', report_id=report.id) }}" class="btn btn-sm btn-primary flex-grow-1">
+                                    <i class="fas fa-eye"></i> View Full Report
+                                </a>
+                                <form method="POST" action="{{ url_for('ai.delete_report', report_id=report.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this report?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if reports.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if reports.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('ai.reports_dashboard', page=reports.prev_num) }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in reports.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num == reports.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('ai.reports_dashboard', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if reports.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('ai.reports_dashboard', page=reports.next_num) }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-3">No reports generated yet.</p>
+                <form method="POST" action="{{ url_for('ai.generate_report') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Generate Your First Report
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.report-card {
+    transition: all 0.3s ease;
+}
+
+.report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.report-preview {
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #666;
+    max-height: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
+{% endblock %}
+

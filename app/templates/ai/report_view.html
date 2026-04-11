@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}View Report - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-file-alt"></i> {{ report.title }}</h1>
+                    <p class="text-muted">
+                        <i class="fas fa-calendar"></i>
+                        {% if report.week_start and report.week_end %}
+                            {{ report.week_start.strftime('%B %d') }} - {{ report.week_end.strftime('%B %d, %Y') }}
+                        {% else %}
+                            {{ report.report_date.strftime('%B %d, %Y') }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('ai.reports_dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Reports
+                    </a>
+                    <form method="POST" action="{{ url_for('ai.delete_report', report_id=report.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this report?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Content -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- AI Summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> AI Summary & Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="report-content">
+                        {{ report.content | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Financial Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.financial_summary %}
+                        {% set fin_data = report.financial_summary | from_json %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">Total Spent (30 days)</small>
+                                <h4 class="mb-3">${{ fin_data.get('total_spent', 0) }}</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Daily Average</small>
+                                <h4 class="mb-3">${{ fin_data.get('average_daily', 0) }}</h4>
+                            </div>
+                        </div>
+
+                        {% if fin_data.get('top_categories') %}
+                            <h6 class="mt-4">Top Spending Categories</h6>
+                            <div class="list-group list-group-flush">
+                                {% for category in fin_data.get('top_categories', []) %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                        <small>{{ category.get('name', 'Unknown') if category is mapping else category }}</small>
+                                        <strong>${{ category.get('amount', 0) if category is mapping else 0 }}</strong>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-3">
+                            <small class="text-muted">Trend:</small>
+                            <span class="badge bg-info ms-2">{{ fin_data.get('trend', 'Unknown') }}</span>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No financial data available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Health Summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat"></i> Health Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.health_summary %}
+                        {% set health_data = report.health_summary | from_json %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">Avg Daily Calories</small>
+                                <h5 class="mb-3">{{ health_data.get('avg_daily_calories', 0) | int }} kcal</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Avg Daily Protein</small>
+                                <h5 class="mb-3">{{ health_data.get('avg_daily_protein', 0) }}g</h5>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <small class="text-muted">Active Habits</small>
+                                <h5 class="mb-0">{{ health_data.get('active_habits', 0) }}</h5>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Consistency Score</small>
+                                <h5 class="mb-0">{{ health_data.get('habit_consistency', 0) }}%</h5>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <small class="text-muted">Health Status:</small>
+                            <h6 class="mb-0">
+                                {% if health_data.get('health_status') == 'Good' %}
+                                    <span class="badge bg-success">{{ health_data.get('health_status') }} 💪</span>
+                                {% elif health_data.get('health_status') == 'Fair' %}
+                                    <span class="badge bg-warning">{{ health_data.get('health_status') }} ⚠️</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ health_data.get('health_status') }} 🔴</span>
+                                {% endif %}
+                            </h6>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No health data available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Habit Analysis -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Habit Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.habits_summary %}
+                        {% set habits_data = report.habits_summary | from_json %}
+                        {% if habits_data.get('total_habits', 0) > 0 %}
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h4>{{ habits_data.get('total_habits', 0) }}</h4>
+                                        <small class="text-muted">Total Habits</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h4>{{ habits_data.get('average_completion', 0) }}%</h4>
+                                        <small class="text-muted">Avg Completion</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h6>Individual Habit Performance</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Habit</th>
+                                            <th>Completion Rate</th>
+                                            <th>Current Streak</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for habit in habits_data.get('habits', []) %}
+                                            <tr>
+                                                <td>{{ habit.get('name', 'Unknown') if habit is mapping else habit }}</td>
+                                                <td>
+                                                    <div class="progress" style="height: 20px;">
+                                                        {% set completion = habit.get('completion_rate', 0) if habit is mapping else 0 %}
+                                                        {% set color = 'success' if completion >= 80 else 'warning' if completion >= 60 else 'danger' %}
+                                                        <div class="progress-bar bg-{{ color }}" style="width: {{ completion }}%">
+                                                            {{ completion }}%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ habit.get('current_streak', 0) if habit is mapping else 0 }} days 🔥</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{% if (habit.get('status') if habit is mapping else 'Unknown') == 'Excellent' %}success{% elif (habit.get('status') if habit is mapping else 'Unknown') == 'Good' %}info{% elif (habit.get('status') if habit is mapping else 'Unknown') == 'Fair' %}warning{% else %}danger{% endif %}">
+                                                        {{ habit.get('status', 'Unknown') if habit is mapping else 'Unknown' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No habits yet. Start by creating a habit in the Habits section!</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted">No habit data available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Expense Prediction -->
+            {% if report.expense_prediction and not report.expense_prediction.error %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-crystal-ball"></i> Expense Prediction</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>Predicted Daily Expense (Next 30 Days)</h6>
+                        <h3 class="mb-3">${{ report.expense_prediction.get('predicted_daily_expense', 0) }}</h3>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted">Based on</small>
+                                <p class="mb-0"><strong>{{ report.expense_prediction.get('based_on_days', 0) }} days</strong> of data</p>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Prediction Confidence</small>
+                                <p class="mb-0"><strong>{{ report.expense_prediction.get('confidence', 'Unknown') }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Report Metadata -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Report Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Report Type</small>
+                            <p class="mb-0"><strong>{{ report.report_type.capitalize() }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Generated</small>
+                            <p class="mb-0"><strong>{{ report.created_at.strftime('%B %d, %Y at %I:%M %p') }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.report-content {
+    line-height: 1.8;
+    font-size: 1rem;
+    color: #333;
+}
+
+.report-content p {
+    margin-bottom: 1rem;
+}
+
+.report-content strong {
+    font-weight: 600;
+}
+
+.report-content ul, .report-content ol {
+    margin-bottom: 1rem;
+    margin-left: 1.5rem;
+}
+
+.report-content li {
+    margin-bottom: 0.5rem;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+}
+
+.badge {
+    font-size: 0.85rem;
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+</style>
+{% endblock %}
+

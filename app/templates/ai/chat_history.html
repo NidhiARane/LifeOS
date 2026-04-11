@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Chat History - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-history"></i> Chat History</h1>
+                    <p class="text-muted">View all your conversations with AI</p>
+                </div>
+                <a href="{{ url_for('ai.chat_dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-comments"></i> Back to Chat
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('ai.chat_history') }}" class="btn btn-outline-secondary {% if not selected_topic %}active{% endif %}">
+                    All Topics
+                </a>
+                <a href="{{ url_for('ai.chat_history', topic='general') }}" class="btn btn-outline-secondary {% if selected_topic == 'general' %}active{% endif %}">
+                    <i class="fas fa-comment"></i> General
+                </a>
+                <a href="{{ url_for('ai.chat_history', topic='finance') }}" class="btn btn-outline-secondary {% if selected_topic == 'finance' %}active{% endif %}">
+                    <i class="fas fa-dollar-sign"></i> Finance
+                </a>
+                <a href="{{ url_for('ai.chat_history', topic='health') }}" class="btn btn-outline-secondary {% if selected_topic == 'health' %}active{% endif %}">
+                    <i class="fas fa-heart"></i> Health
+                </a>
+                <a href="{{ url_for('ai.chat_history', topic='habits') }}" class="btn btn-outline-secondary {% if selected_topic == 'habits' %}active{% endif %}">
+                    <i class="fas fa-check-circle"></i> Habits
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% if messages.items %}
+                {% for message in messages.items %}
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if message.message_type == 'user' %}
+                                            <span class="badge bg-primary me-2">You</span>
+                                        {% else %}
+                                            <span class="badge bg-success me-2">AI Assistant</span>
+                                        {% endif %}
+                                        {% if message.topic %}
+                                            <span class="badge bg-light text-dark">{{ message.topic }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-2">{{ message.content }}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> {{ message.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </small>
+                                </div>
+                                <form method="POST" action="{{ url_for('ai.delete_message', message_id=message.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this message?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if messages.pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if messages.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('ai.chat_history', page=messages.prev_num, topic=selected_topic) }}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            {% for page_num in messages.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num == messages.page %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('ai.chat_history', page=page_num, topic=selected_topic) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if messages.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('ai.chat_history', page=messages.next_num, topic=selected_topic) }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5 text-center">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No chat history yet. Start a conversation!</p>
+                        <a href="{{ url_for('ai.chat_dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-comments"></i> Open Chat
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+}
+
+.badge {
+    font-size: 0.85rem;
+}
+
+.btn-group .btn {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+

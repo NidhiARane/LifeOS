@@ -157,11 +157,19 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0"><i class="fas fa-brain"></i> AI Assistant</h5>
+                    <h5 class="mb-0"><i class="fas fa-robot"></i> AI Intelligence</h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Module coming soon! Chat with AI for personalized insights.
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{{ url_for('ai.chat_dashboard') }}" class="btn btn-outline-danger text-start mb-2">
+                            <i class="fas fa-comments"></i> Chat with AI
+                        </a>
+                        <a href="{{ url_for('ai.insights_dashboard') }}" class="btn btn-outline-danger text-start mb-2">
+                            <i class="fas fa-lightbulb"></i> View Insights
+                        </a>
+                        <a href="{{ url_for('ai.reports_dashboard') }}" class="btn btn-outline-danger text-start">
+                            <i class="fas fa-file-alt"></i> Weekly Reports
+                        </a>
                     </div>
                 </div>
             </div>
@@ -169,12 +177,20 @@
 
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Life Score</h5>
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Analytics</h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Module coming soon! Calculate your overall life score.
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-outline-info text-start mb-2">
+                            <i class="fas fa-chart-line"></i> Analytics Dashboard
+                        </a>
+                        <a href="{{ url_for('analytics.life_score_dashboard') }}" class="btn btn-outline-info text-start mb-2">
+                            <i class="fas fa-star"></i> Life Score
+                        </a>
+                        <a href="{{ url_for('analytics.manage_budget') }}" class="btn btn-outline-info text-start">
+                            <i class="fas fa-cog"></i> Budget Settings
+                        </a>
                     </div>
                 </div>
             </div>

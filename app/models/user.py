@@ -54,6 +54,7 @@ class User(UserMixin, db.Model):
     habits = db.relationship('Habit', back_populates='user', cascade='all, delete-orphan', lazy='dynamic')
     goals = db.relationship('Goal', back_populates='user', cascade='all, delete-orphan', lazy='dynamic')
     groceries = db.relationship('GroceryItem', back_populates='user', cascade='all, delete-orphan', lazy='dynamic')
+    # ChatMessage and AIReport define their own relationships with backrefs
 
     def __repr__(self):
         return f'<User {self.username}>'

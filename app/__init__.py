@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from config import config
+import json
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -46,6 +47,8 @@ def create_app(config_name='development'):
     from app.routes.finance import finance_bp
     from app.routes.grocery import grocery_bp
     from app.routes.health import health_bp
+    from app.routes.ai import ai_bp
+    from app.routes.analytics import analytics_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
@@ -54,6 +57,8 @@ def create_app(config_name='development'):
     app.register_blueprint(finance_bp)
     app.register_blueprint(grocery_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(ai_bp)
+    app.register_blueprint(analytics_bp)
 
     # Register main route
     from app.routes.main import main_bp
@@ -63,6 +68,17 @@ def create_app(config_name='development'):
     @app.context_processor
     def inject_config():
         return {'app_name': 'LifeOS'}
+
+    # Register custom Jinja2 filters
+    @app.template_filter('from_json')
+    def from_json_filter(value):
+        """Convert JSON string to Python object"""
+        try:
+            if isinstance(value, str):
+                return json.loads(value)
+            return value
+        except (json.JSONDecodeError, TypeError):
+            return {}
 
     # Error handlers
     @app.errorhandler(404)
