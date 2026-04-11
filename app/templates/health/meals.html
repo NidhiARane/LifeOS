@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Meals - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-apple-alt"></i> Nutrition & Meals</h1>
+                    <p class="text-muted">Track your meals and nutritional intake</p>
+                </div>
+                <a href="{{ url_for('health.log_meal') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> Log Meal
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Today's Calories</p>
+                            <h4 class="mb-0">{{ today_stats.calories | int }} / {{ daily_calorie_goal }}</h4>
+                            <small class="text-muted">
+                                {% if daily_calorie_goal > 0 %}
+                                    {{ "%.1f"|format((today_stats.calories / daily_calorie_goal) * 100) }}% of goal
+                                {% endif %}
+                            </small>
+                        </div>
+                        <i class="fas fa-fire fa-2x text-danger opacity-50"></i>
+                    </div>
+                    <div class="progress mt-2" style="height: 5px;">
+                        {% set calorie_percent = (today_stats.calories / daily_calorie_goal * 100) if daily_calorie_goal > 0 else 0 %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ [calorie_percent, 100] | min }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Today's Protein</p>
+                            <h4 class="mb-0">{{ today_stats.protein | int }}g / {{ daily_protein_goal | int }}g</h4>
+                            <small class="text-muted">
+                                {% if daily_protein_goal > 0 %}
+                                    {{ "%.1f"|format((today_stats.protein / daily_protein_goal) * 100) }}% of goal
+                                {% endif %}
+                            </small>
+                        </div>
+                        <i class="fas fa-dumbbell fa-2x text-success opacity-50"></i>
+                    </div>
+                    <div class="progress mt-2" style="height: 5px;">
+                        {% set protein_percent = (today_stats.protein / daily_protein_goal * 100) if daily_protein_goal > 0 else 0 %}
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ [protein_percent, 100] | min }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Today's Carbs</p>
+                            <h4 class="mb-0">{{ today_stats.carbs | int }}g</h4>
+                        </div>
+                        <i class="fas fa-bread-slice fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Today's Fats</p>
+                            <h4 class="mb-0">{{ today_stats.fat | int }}g</h4>
+                        </div>
+                        <i class="fas fa-droplet fa-2x text-info opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meals List -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-utensils"></i> Recent Meals</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if meals.items %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Meal Name</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Calories</th>
+                                <th>Protein</th>
+                                <th>Carbs</th>
+                                <th>Fat</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for meal in meals.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ meal.name }}</strong>
+                                        {% if meal.description %}
+                                            <br><small class="text-muted">{{ meal.description }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ meal.meal_type }}</span>
+                                    </td>
+                                    <td>{{ meal.meal_date.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ meal.calories | int }} kcal</td>
+                                    <td>{{ meal.protein | int }}g</td>
+                                    <td>{{ meal.carbs | int }}g</td>
+                                    <td>{{ meal.fat | int }}g</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('health.delete_meal', meal_id=meal.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this meal?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if meals.pages > 1 %}
+                    <nav aria-label="Page navigation" class="p-3">
+                        <ul class="pagination mb-0">
+                            {% if meals.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('health.meals_dashboard', page=meals.prev_num) }}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            {% for page_num in meals.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num == meals.page %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('health.meals_dashboard', page=page_num) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if meals.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('health.meals_dashboard', page=meals.next_num) }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="p-5 text-center">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No meals logged yet. <a href="{{ url_for('health.log_meal') }}">Log your first meal!</a></p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: all 0.3s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+</style>
+{% endblock %}
+

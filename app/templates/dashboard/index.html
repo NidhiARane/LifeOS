@@ -139,8 +139,16 @@
                     <h5 class="mb-0"><i class="fas fa-apple-alt"></i> Nutrition & Habits</h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Module 3 coming soon! Log meals and track habits.
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{{ url_for('health.meals_dashboard') }}" class="btn btn-outline-warning text-start mb-2">
+                            <i class="fas fa-utensils"></i> Log Meals & Nutrition
+                        </a>
+                        <a href="{{ url_for('health.habits_dashboard') }}" class="btn btn-outline-warning text-start mb-2">
+                            <i class="fas fa-check-circle"></i> Track Habits
+                        </a>
+                        <a href="{{ url_for('health.goals_dashboard') }}" class="btn btn-outline-warning text-start">
+                            <i class="fas fa-target"></i> Manage Goals
+                        </a>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Create Habit - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{{ url_for('health.habits_dashboard') }}" class="btn btn-outline-secondary mb-3">
+                    <i class="fas fa-arrow-left"></i> Back to Habits
+                </a>
+                <h1 class="h2"><i class="fas fa-circle-plus"></i> Create New Habit</h1>
+                <p class="text-muted">Build a positive habit and track your progress</p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <!-- Habit Name -->
+                        <div class="mb-4">
+                            <label for="habit_name" class="form-label fw-semibold">
+                                <i class="fas fa-check-circle"></i> Habit Name *
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="habit_name" name="habit_name"
+                                   placeholder="e.g., Morning Exercise, Read 30 minutes" required>
+                            <small class="text-muted">What habit do you want to build?</small>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Add any details about your habit..."></textarea>
+                        </div>
+
+                        <!-- Row: Category and Frequency -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label fw-semibold">
+                                    <i class="fas fa-tag"></i> Category
+                                </label>
+                                <select class="form-select form-select-lg" id="category" name="category">
+                                    <option value="">Select a category...</option>
+                                    <option value="health">🏃 Health & Fitness</option>
+                                    <option value="productivity">💼 Productivity</option>
+                                    <option value="learning">📚 Learning</option>
+                                    <option value="wellness">🧘 Wellness & Meditation</option>
+                                    <option value="social">👥 Social & Relationships</option>
+                                    <option value="finance">💰 Finance</option>
+                                    <option value="other">🎯 Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="frequency" class="form-label fw-semibold">
+                                    <i class="fas fa-repeat"></i> Frequency *
+                                </label>
+                                <select class="form-select form-select-lg" id="frequency" name="frequency" required>
+                                    <option value="">Select frequency...</option>
+                                    <option value="daily">📅 Daily</option>
+                                    <option value="weekly">🔄 Weekly</option>
+                                    <option value="custom">✨ Custom</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Target -->
+                        <div class="mb-4">
+                            <label for="target" class="form-label fw-semibold">
+                                <i class="fas fa-bullseye"></i> Target (per week/month)
+                            </label>
+                            <input type="number" class="form-control form-control-lg" id="target"
+                                   name="target" placeholder="e.g., 5 times per week" min="1" value="1">
+                            <small class="text-muted">How many times do you want to complete this habit?</small>
+                        </div>
+
+                        <!-- Tips -->
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Tips for success:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Start small and specific (e.g., "Run 3km" instead of "Exercise")</li>
+                                <li>Pick a consistent time each day</li>
+                                <li>Track daily to build your streak</li>
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{{ url_for('health.habits_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Create Habit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+document.querySelectorAll('.needs-validation').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}
+

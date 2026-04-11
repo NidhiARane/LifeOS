@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Goals - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-target"></i> Life Goals</h1>
+                    <p class="text-muted">Set and track your personal goals</p>
+                </div>
+                <a href="{{ url_for('health.create_goal') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> New Goal
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Goals</p>
+                            <h4 class="mb-0">{{ goals | length }}</h4>
+                        </div>
+                        <i class="fas fa-bullseye fa-2x text-primary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Completed Goals</p>
+                            <h4 class="mb-0">{{ goals | selectattr('is_completed', 'equalto', True) | list | length }}</h4>
+                        </div>
+                        <i class="fas fa-check-double fa-2x text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">In Progress</p>
+                            <h4 class="mb-0">{{ goals | selectattr('is_completed', 'equalto', False) | list | length }}</h4>
+                        </div>
+                        <i class="fas fa-spinner fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Avg. Progress</p>
+                            <h4 class="mb-0">
+                                {% if goals %}
+                                    {% set total_progress = 0 %}
+                                    {% for goal in goals %}
+                                        {% set total_progress = total_progress + goal.get_progress_percentage() %}
+                                    {% endfor %}
+                                    {{ "%.0f"|format(total_progress / (goals | length)) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h4>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x text-info opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals by Category -->
+    {% if categorized_goals %}
+        {% for category, category_goals in categorized_goals.items() %}
+            <div class="mb-5">
+                <h4 class="mb-3">
+                    {% if category == 'health' %}
+                        <i class="fas fa-heart text-danger"></i> Health Goals
+                    {% elif category == 'financial' %}
+                        <i class="fas fa-dollar-sign text-success"></i> Financial Goals
+                    {% elif category == 'learning' %}
+                        <i class="fas fa-book text-warning"></i> Learning Goals
+                    {% elif category == 'fitness' %}
+                        <i class="fas fa-dumbbell text-info"></i> Fitness Goals
+                    {% else %}
+                        <i class="fas fa-circle text-secondary"></i> {{ category }} Goals
+                    {% endif %}
+                </h4>
+
+                <div class="row g-3">
+                    {% for goal in category_goals %}
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm goal-card h-100">
+                                <div class="card-body">
+                                    <!-- Header -->
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="card-title mb-1">
+                                                {% if goal.is_completed %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% else %}
+                                                    <i class="fas fa-circle-notch text-secondary"></i>
+                                                {% endif %}
+                                                {{ goal.title }}
+                                            </h5>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#updateModal{{ goal.id }}" style="cursor: pointer;">
+                                                        Update Progress
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form method="POST" action="{{ url_for('health.delete_goal', goal_id=goal.id) }}" style="display: inline;">
+                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete this goal?')">
+                                                            Delete
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    {% if goal.description %}
+                                        <p class="text-muted small mb-3">{{ goal.description }}</p>
+                                    {% endif %}
+
+                                    <!-- Priority Badge -->
+                                    <div class="mb-3">
+                                        {% if goal.priority == 'high' %}
+                                            <span class="badge bg-danger">🔴 High Priority</span>
+                                        {% elif goal.priority == 'medium' %}
+                                            <span class="badge bg-warning">🟡 Medium Priority</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">⚪ Low Priority</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Progress -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">Progress</small>
+                                            <small class="fw-semibold">
+                                                {{ "%.0f"|format(goal.get_progress_percentage()) }}%
+                                            </small>
+                                        </div>
+                                        <div class="progress" style="height: 10px;">
+                                            {% set color = 'success' if goal.is_completed else 'primary' %}
+                                            <div class="progress-bar bg-{{ color }}" role="progressbar"
+                                                 style="width: {{ [goal.get_progress_percentage(), 100] | min }}%"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Goal Details -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Current Value</small>
+                                            <strong>{{ goal.current_value }} {{ goal.unit }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Target Value</small>
+                                            <strong>{{ goal.target_value }} {{ goal.unit }}</strong>
+                                        </div>
+                                    </div>
+
+                                    {% if goal.target_date %}
+                                        <div class="mb-3">
+                                            <small class="text-muted d-block">Target Date</small>
+                                            <strong>{{ goal.target_date.strftime('%b %d, %Y') }}</strong>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Update Button -->
+                                    <button class="btn btn-sm btn-primary w-100" data-bs-toggle="modal" data-bs-target="#updateModal{{ goal.id }}">
+                                        <i class="fas fa-edit"></i> Update Progress
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Update Progress Modal -->
+                            <div class="modal fade" id="updateModal{{ goal.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Update Progress</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="currentValue{{ goal.id }}" class="form-label">
+                                                    Current Value ({{ goal.unit }})
+                                                </label>
+                                                <input type="number" class="form-control" id="currentValue{{ goal.id }}"
+                                                       value="{{ goal.current_value }}" step="0.1">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" onclick="updateGoalProgress({{ goal.id }})">
+                                                Save Progress
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-3">No goals yet. Set one to start your journey!</p>
+                <a href="{{ url_for('health.create_goal') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Your First Goal
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.goal-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.goal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateGoalProgress(goalId) {
+    const currentValue = document.getElementById(`currentValue${goalId}`).value;
+
+    fetch(`/health/goal/${goalId}/update-progress`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ current_value: currentValue })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Close modal and reload
+            const modal = bootstrap.Modal.getInstance(document.getElementById(`updateModal${goalId}`));
+            modal.hide();
+            setTimeout(() => location.reload(), 500);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+</script>
+{% endblock %}
+

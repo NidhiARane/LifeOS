@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Habits - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2"><i class="fas fa-check-circle"></i> Habit Tracker</h1>
+                    <p class="text-muted">Build and maintain positive habits</p>
+                </div>
+                <a href="{{ url_for('health.create_habit') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus"></i> New Habit
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Habits</p>
+                            <h4 class="mb-0">{{ habit_stats | length }}</h4>
+                        </div>
+                        <i class="fas fa-list-check fa-2x text-primary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Active Habits</p>
+                            <h4 class="mb-0">{{ habit_stats | selectattr('habit.is_active', 'equalto', True) | list | length }}</h4>
+                        </div>
+                        <i class="fas fa-running fa-2x text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Avg. Consistency</p>
+                            <h4 class="mb-0">
+                                {% if habit_stats %}
+                                    {{ "%.1f"|format(habit_stats | map(attribute='consistency_score') | sum / (habit_stats | length)) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h4>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Habits List -->
+    {% if habit_stats %}
+        <div class="row g-3">
+            {% for stat in habit_stats %}
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm habit-card h-100">
+                        <div class="card-body">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <i class="fas fa-circle-check text-success"></i> {{ stat.habit.name }}
+                                    </h5>
+                                    {% if stat.habit.description %}
+                                        <p class="text-muted small mb-0">{{ stat.habit.description }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ url_for('health.create_habit') }}">Edit</a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="POST" action="{{ url_for('health.delete_habit', habit_id=stat.habit.id) }}" style="display: inline;">
+                                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete this habit?')">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Category & Frequency -->
+                            <div class="mb-3">
+                                {% if stat.habit.category %}
+                                    <span class="badge bg-light text-dark me-2">{{ stat.habit.category }}</span>
+                                {% endif %}
+                                <span class="badge bg-info">{{ stat.habit.frequency }}</span>
+                                {% if stat.habit.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Streaks -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded">
+                                        <small class="text-muted d-block mb-1">Current Streak</small>
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-flame text-danger"></i> {{ stat.habit.current_streak }} days
+                                        </h5>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded">
+                                        <small class="text-muted d-block mb-1">Longest Streak</small>
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-star text-warning"></i> {{ stat.habit.longest_streak }} days
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Consistency Score -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Consistency Score</small>
+                                    <small class="fw-semibold">{{ "%.1f"|format(stat.consistency_score) }}%</small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    {% set color = 'success' if stat.consistency_score >= 80 else 'warning' if stat.consistency_score >= 50 else 'danger' %}
+                                    <div class="progress-bar bg-{{ color }}" role="progressbar"
+                                         style="width: {{ [stat.consistency_score, 100] | min }}%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Check In Button -->
+                            <div class="d-grid">
+                                <button class="btn btn-success btn-sm checkin-btn" data-habit-id="{{ stat.habit.id }}">
+                                    <i class="fas fa-check"></i> Check In Today
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-3">No habits yet. Create one to get started!</p>
+                <a href="{{ url_for('health.create_habit') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Create Your First Habit
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Success Toast for Check-in -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="checkinToast" class="toast" role="alert">
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">Great Job!</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            <span id="toastMessage">Habit checked in! Your streak is growing. 🔥</span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.habit-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.habit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.checkin-btn {
+    transition: all 0.3s ease;
+}
+
+.checkin-btn:hover {
+    transform: scale(1.05);
+}
+
+.progress {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Check-in functionality
+document.querySelectorAll('.checkin-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const habitId = this.dataset.habitId;
+        const btn = this;
+
+        fetch(`/health/habit/${habitId}/checkin`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Show toast
+                const toastEl = document.getElementById('checkinToast');
+                const toast = new bootstrap.Toast(toastEl);
+                document.getElementById('toastMessage').textContent =
+                    `Habit checked in! Streak: ${data.current_streak} days 🔥`;
+                toast.show();
+
+                // Disable button temporarily
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-check"></i> Checked in today!';
+
+                // Reload page after 2 seconds
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %}
+

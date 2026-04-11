@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Log Meal - LifeOS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{{ url_for('health.meals_dashboard') }}" class="btn btn-outline-secondary mb-3">
+                    <i class="fas fa-arrow-left"></i> Back to Meals
+                </a>
+                <h1 class="h2"><i class="fas fa-plus-circle"></i> Log a Meal</h1>
+                <p class="text-muted">Add nutritional details to track your intake</p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <!-- Meal Name -->
+                        <div class="mb-3">
+                            <label for="meal_name" class="form-label fw-semibold">
+                                <i class="fas fa-utensils"></i> Meal Name *
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="meal_name" name="meal_name"
+                                   placeholder="e.g., Chicken Caesar Salad" required>
+                            <small class="text-muted">What did you eat?</small>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">
+                                <i class="fas fa-note-sticky"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Optional details about the meal..."></textarea>
+                        </div>
+
+                        <!-- Row: Meal Type and Date -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="meal_type" class="form-label fw-semibold">
+                                    <i class="fas fa-clock"></i> Meal Type *
+                                </label>
+                                <select class="form-select form-select-lg" id="meal_type" name="meal_type" required>
+                                    <option value="">Select meal type...</option>
+                                    <option value="breakfast">🌅 Breakfast</option>
+                                    <option value="lunch">☀️ Lunch</option>
+                                    <option value="dinner">🌙 Dinner</option>
+                                    <option value="snack">🍿 Snack</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="meal_date" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar"></i> Date & Time *
+                                </label>
+                                <input type="datetime-local" class="form-control form-control-lg" id="meal_date"
+                                       name="meal_date" value="{{ now.strftime('%Y-%m-%dT%H:%M') }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <hr class="my-4">
+
+                        <!-- Nutritional Information -->
+                        <h5 class="mb-3"><i class="fas fa-chart-pie"></i> Nutritional Information</h5>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="calories" class="form-label fw-semibold">
+                                    <i class="fas fa-fire text-danger"></i> Calories (kcal) *
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="calories"
+                                       name="calories" placeholder="0" step="0.1" required>
+                                <small class="text-muted">Total energy in kilocalories</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="protein" class="form-label fw-semibold">
+                                    <i class="fas fa-dumbbell text-success"></i> Protein (g) *
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="protein"
+                                       name="protein" placeholder="0" step="0.1" required>
+                                <small class="text-muted">Protein in grams</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="carbs" class="form-label fw-semibold">
+                                    <i class="fas fa-bread-slice text-warning"></i> Carbs (g)
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="carbs"
+                                       name="carbs" placeholder="0" step="0.1">
+                                <small class="text-muted">Carbohydrates in grams</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="fat" class="form-label fw-semibold">
+                                    <i class="fas fa-droplet text-info"></i> Fats (g)
+                                </label>
+                                <input type="number" class="form-control form-control-lg" id="fat"
+                                       name="fat" placeholder="0" step="0.1">
+                                <small class="text-muted">Fat in grams</small>
+                            </div>
+                        </div>
+
+                        <!-- Tips -->
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Use nutrition labels or a food database to find accurate nutritional information for your meals.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{{ url_for('health.meals_dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check"></i> Log Meal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+// Form validation
+document.querySelectorAll('.needs-validation').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}
+
