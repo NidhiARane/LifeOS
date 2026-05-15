@@ -204,17 +204,37 @@ def generate_report():
             flash(f'Error generating report: {report_data["error"]}', 'danger')
             return redirect(url_for('ai.reports_dashboard'))
 
+        # Safely extract and JSON-serialize the data
+        try:
+            financial_summary = json.dumps(report_data.get('financial_summary', {}))
+        except (TypeError, ValueError):
+            financial_summary = json.dumps({})
+
+        try:
+            health_summary = json.dumps(report_data.get('health_summary', {}))
+        except (TypeError, ValueError):
+            health_summary = json.dumps({})
+
+        try:
+            habits_summary = json.dumps(report_data.get('habits_summary', {}))
+        except (TypeError, ValueError):
+            habits_summary = json.dumps({})
+
+        ai_summary = report_data.get('ai_summary', '')
+        if not ai_summary or (isinstance(ai_summary, str) and len(ai_summary.strip()) == 0):
+            ai_summary = "Your weekly report is ready. Check back for AI-generated insights!"
+
         # Save report to database
         report = AIReport(
             user_id=current_user.id,
             report_type='weekly',
             title=f'Weekly Report - {datetime.utcnow().strftime("%B %d, %Y")}',
-            content=report_data.get('ai_summary', ''),
-            financial_summary=json.dumps(report_data.get('financial_summary', {})),
-            health_summary=json.dumps(report_data.get('health_summary', {})),
-            habits_summary=json.dumps(report_data.get('habits_summary', {})),
-            key_insights=report_data.get('ai_summary', ''),
-            recommendations=report_data.get('ai_summary', ''),
+            content=ai_summary,
+            financial_summary=financial_summary,
+            health_summary=health_summary,
+            habits_summary=habits_summary,
+            key_insights=ai_summary,
+            recommendations=ai_summary,
             report_date=datetime.utcnow(),
             week_start=datetime.fromisoformat(report_data['week_start']),
             week_end=datetime.fromisoformat(report_data['week_end'])
@@ -228,6 +248,8 @@ def generate_report():
 
     except Exception as e:
         db.session.rollback()
+        import traceback
+        traceback.print_exc()
         flash(f'Error generating report: {str(e)}', 'danger')
         return redirect(url_for('ai.reports_dashboard'))
 
@@ -276,4 +298,125 @@ def get_summary_api():
         'expense_prediction': AIService.predict_expenses(current_user.id),
         'generated_at': datetime.utcnow().isoformat()
     })
+
+
+# ==================== REPORTS API ROUTES ====================
+
+@ai_bp.route('/api/report/generate', methods=['POST'])
+@login_required
+def generate_report_api():
+    """API endpoint to generate weekly report (AJAX)"""
+    try:
+        report_data = AIService.generate_weekly_report(current_user.id)
+
+        if 'error' in report_data:
+            return jsonify({'status': 'error', 'message': report_data["error"]}), 400
+
+        # Safely serialize data
+        try:
+            financial_summary = json.dumps(report_data.get('financial_summary', {}))
+        except (TypeError, ValueError):
+            financial_summary = json.dumps({})
+
+        try:
+            health_summary = json.dumps(report_data.get('health_summary', {}))
+        except (TypeError, ValueError):
+            health_summary = json.dumps({})
+
+        try:
+            habits_summary = json.dumps(report_data.get('habits_summary', {}))
+        except (TypeError, ValueError):
+            habits_summary = json.dumps({})
+
+        ai_summary = report_data.get('ai_summary', '')
+        if not ai_summary or len(ai_summary.strip()) == 0:
+            ai_summary = "Your weekly report is ready!"
+
+        # Save report
+        report = AIReport(
+            user_id=current_user.id,
+            report_type='weekly',
+            title=f'Weekly Report - {datetime.utcnow().strftime("%B %d, %Y")}',
+            content=ai_summary,
+            financial_summary=financial_summary,
+            health_summary=health_summary,
+            habits_summary=habits_summary,
+            key_insights=ai_summary,
+            recommendations=ai_summary,
+            report_date=datetime.utcnow(),
+            week_start=datetime.fromisoformat(report_data['week_start']),
+            week_end=datetime.fromisoformat(report_data['week_end'])
+        )
+
+        db.session.add(report)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'report_id': report.id,
+            'message': 'Weekly report generated successfully!',
+            'redirect': url_for('ai.view_report', report_id=report.id)
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@ai_bp.route('/api/report/check-data', methods=['GET'])
+@login_required
+def check_report_data():
+    """Check if user has enough data for report generation"""
+    try:
+        expenses = Expense.query.filter_by(user_id=current_user.id).count()
+        meals = Meal.query.filter_by(user_id=current_user.id).count()
+        habits = Habit.query.filter_by(user_id=current_user.id).count()
+
+        has_expenses = expenses > 0
+        has_meals = meals > 0
+        has_habits = habits > 0
+        has_any_data = has_expenses or has_meals or has_habits
+
+        return jsonify({
+            'status': 'success',
+            'has_data': has_any_data,
+            'expenses': expenses,
+            'meals': meals,
+            'habits': habits,
+            'data_summary': {
+                'expenses': 'Yes' if has_expenses else 'No - Log some expenses',
+                'meals': 'Yes' if has_meals else 'No - Log some meals',
+                'habits': 'Yes' if has_habits else 'No - Create some habits'
+            },
+            'can_generate': has_any_data
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@ai_bp.route('/api/reports/recent', methods=['GET'])
+@login_required
+def get_recent_reports():
+    """Get recent reports (API)"""
+    try:
+        limit = request.args.get('limit', 5, type=int)
+        reports = AIReport.query.filter_by(user_id=current_user.id).order_by(
+            AIReport.report_date.desc()
+        ).limit(limit).all()
+
+        return jsonify({
+            'status': 'success',
+            'count': len(reports),
+            'reports': [
+                {
+                    'id': r.id,
+                    'title': r.title,
+                    'report_date': r.report_date.isoformat(),
+                    'preview': r.content[:100] + '...' if len(r.content) > 100 else r.content
+                }
+                for r in reports
+            ]
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 

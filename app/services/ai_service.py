@@ -299,28 +299,48 @@ Provide helpful, personalized advice based on the user's data. Be concise but he
             habits = AIService.analyze_habit_consistency(user_id)
             expense_prediction = AIService.predict_expenses(user_id, days_ahead=7)
 
+            # Check for errors in any of the data collections
+            if 'error' in financial or 'error' in health or 'error' in habits:
+                return {'error': 'Failed to gather user data for report generation'}
+
             # Generate summary with AI
-            summary_prompt = f"""Based on the following weekly data, provide a brief personalized summary and 3 key recommendations:
+            # Format the data more carefully for the prompt
+            categories_str = ', '.join([f"{cat['name']}: ${cat['amount']:.2f}" for cat in financial.get('top_categories', [])])
+            if not categories_str:
+                categories_str = "No expense data available"
+
+            summary_prompt = f"""Based on the following weekly life management data, provide a brief personalized summary (2-3 paragraphs) and 3 key recommendations:
 
 Financial Summary:
 - Total spent: ${financial.get('total_spent', 0)}
 - Average daily: ${financial.get('average_daily', 0)}
-- Top categories: {financial.get('top_categories', [])}
-- Trend: {financial.get('trend', 'Unknown')}
+- Top spending categories: {categories_str}
+- Spending trend: {financial.get('trend', 'Unknown')}
 
 Health Summary:
 - Average daily calories: {health.get('avg_daily_calories', 0)}
 - Average daily protein: {health.get('avg_daily_protein', 0)}g
 - Active habits: {health.get('active_habits', 0)}
 - Habit consistency: {health.get('habit_consistency', 0)}%
+- Overall health status: {health.get('health_status', 'Unknown')}
 
 Habit Analysis:
-- Total habits: {habits.get('total_habits', 0)}
+- Total habits tracked: {habits.get('total_habits', 0)}
 - Average completion rate: {habits.get('average_completion', 0)}%
 
-Provide actionable, encouraging advice."""
+Please provide:
+1. A summary of the user's week
+2. Areas of strength to build on
+3. Three specific, actionable recommendations for improvement
+
+Be encouraging and supportive in your tone."""
 
             ai_summary = AIService.chat_with_gemini(summary_prompt, user_id)
+
+            # Handle case where AI response contains error
+            if isinstance(ai_summary, str) and 'error' in ai_summary.lower():
+                # Fallback to a template response
+                ai_summary = f"""Weekly Summary: Based on your data, you spent ${financial.get('total_spent', 0)} over 7 days with an average of ${financial.get('average_daily', 0)} per day. You logged {health.get('avg_daily_calories', 0)} calories on average and maintained {health.get('habit_consistency', 0)}% habit consistency. Keep up the good work and consider the recommendations for improvement!"""
 
             report = {
                 'week_start': (datetime.utcnow() - timedelta(days=7)).isoformat(),
@@ -336,5 +356,8 @@ Provide actionable, encouraging advice."""
             return report
 
         except Exception as e:
+            import traceback
+            print(f"Error generating weekly report: {str(e)}")
+            traceback.print_exc()
             return {'error': str(e)}
 

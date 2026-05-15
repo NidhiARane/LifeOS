@@ -10,13 +10,81 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="h2"><i class="fas fa-file-alt"></i> Weekly AI Reports</h1>
-                    <p class="text-muted">AI-generated insights and recommendations</p>
+                    <p class="text-muted">AI-generated insights and recommendations for your personal growth</p>
                 </div>
-                <form method="POST" action="{{ url_for('ai.generate_report') }}" style="display: inline;">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                <div id="generateButtonContainer">
+                    <button id="generateReportBtn" type="button" class="btn btn-primary btn-lg" data-bs-toggle="tooltip" title="Generate a new weekly report with AI insights">
                         <i class="fas fa-plus"></i> Generate New Report
                     </button>
-                </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Status Card (shown when generating) -->
+    <div id="dataStatusCard" class="card border-0 shadow-sm mb-4" style="display: none;">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <span id="expenseStatus" class="badge bg-secondary">-</span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Expenses Logged</small>
+                            <p id="expenseCount" class="mb-0"><strong>0</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <span id="mealStatus" class="badge bg-secondary">-</span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Meals Logged</small>
+                            <p id="mealCount" class="mb-0"><strong>0</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <span id="habitStatus" class="badge bg-secondary">-</span>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Habits Created</small>
+                            <p id="habitCount" class="mb-0"><strong>0</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="spinner-border spinner-border-sm text-primary" id="generatingSpinner" role="status">
+                                <span class="visually-hidden">Generating...</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <small class="text-muted">Status</small>
+                            <p id="statusText" class="mb-0"><strong>Ready to Generate</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="card border-0 shadow-sm mb-4" style="display: none;">
+        <div class="card-body text-center p-5">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Generating report...</span>
+            </div>
+            <h5>Generating Your Weekly Report...</h5>
+            <p class="text-muted">This may take a few moments. Please wait.</p>
+            <div class="progress" style="height: 3px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
             </div>
         </div>
     </div>
@@ -103,11 +171,10 @@
             <div class="card-body p-5 text-center">
                 <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                 <p class="text-muted mb-3">No reports generated yet.</p>
-                <form method="POST" action="{{ url_for('ai.generate_report') }}" style="display: inline;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-magic"></i> Generate Your First Report
-                    </button>
-                </form>
+                <p class="small text-muted mb-4">Generate your first AI-powered weekly report to get personalized insights about your finances, health, and habits.</p>
+                <button id="generateFirstReportBtn" type="button" class="btn btn-primary">
+                    <i class="fas fa-magic"></i> Generate Your First Report
+                </button>
             </div>
         </div>
     {% endif %}
@@ -136,6 +203,135 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+}
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const generateBtn = document.getElementById('generateReportBtn');
+    const generateFirstBtn = document.getElementById('generateFirstReportBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const dataStatusCard = document.getElementById('dataStatusCard');
+
+    function showLoading() {
+        loadingIndicator.style.display = 'block';
+        if (generateBtn) generateBtn.disabled = true;
+        if (generateFirstBtn) generateFirstBtn.disabled = true;
+    }
+
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+        if (generateBtn) generateBtn.disabled = false;
+        if (generateFirstBtn) generateFirstBtn.disabled = false;
+    }
+
+    function checkDataStatus() {
+        return fetch('/ai/api/report/check-data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    dataStatusCard.style.display = 'block';
+                    document.getElementById('expenseCount').textContent = data.expenses;
+                    document.getElementById('mealCount').textContent = data.meals;
+                    document.getElementById('habitCount').textContent = data.habits;
+
+                    // Update status badges
+                    document.getElementById('expenseStatus').className =
+                        'badge ' + (data.expenses > 0 ? 'bg-success' : 'bg-warning');
+                    document.getElementById('mealStatus').className =
+                        'badge ' + (data.meals > 0 ? 'bg-success' : 'bg-warning');
+                    document.getElementById('habitStatus').className =
+                        'badge ' + (data.habits > 0 ? 'bg-success' : 'bg-warning');
+
+                    return data.can_generate;
+                }
+                return false;
+            })
+            .catch(error => {
+                console.error('Error checking data:', error);
+                return false;
+            });
+    }
+
+    function generateReport() {
+        checkDataStatus().then(canGenerate => {
+            if (!canGenerate) {
+                alert('You need at least some data to generate a report. Please log expenses, meals, or create habits first.');
+                return;
+            }
+
+            showLoading();
+            document.getElementById('statusText').textContent = 'Generating...';
+            document.getElementById('generatingSpinner').style.display = 'inline-block';
+
+            fetch('/ai/api/report/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('input[name="csrf_token"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'success') {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-check-circle"></i> ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+
+                    // Insert alert at the top of container-fluid
+                    const container = document.querySelector('.container-fluid');
+                    if (container) {
+                        // Insert as first child
+                        container.insertAdjacentElement('afterbegin', alertDiv);
+                    } else {
+                        // Fallback: insert at beginning of body
+                        document.body.insertAdjacentElement('afterbegin', alertDiv);
+                    }
+
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 2000);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                alert('An error occurred while generating the report.');
+            });
+        });
+    }
+
+    // Attach event listeners
+    if (generateBtn) {
+        generateBtn.addEventListener('click', generateReport);
+    }
+    if (generateFirstBtn) {
+        generateFirstBtn.addEventListener('click', generateReport);
+    }
+
+    // Check data on page load
+    checkDataStatus();
+});
+</script>
 {% endblock %}
 
