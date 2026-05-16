@@ -20,7 +20,7 @@ def index():
 @login_required
 def dashboard():
     """User dashboard"""
-    return render_template('dashboard/index.html', user=current_user)
+    return render_template('dashboard/index.html', user=current_user, show_back_button=False)
 
 
 @main_bp.route('/about')

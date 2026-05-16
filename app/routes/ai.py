@@ -264,7 +264,7 @@ def view_report(report_id):
         flash('Unauthorized access', 'danger')
         return redirect(url_for('ai.reports_dashboard'))
 
-    return render_template('ai/report_view.html', report=report)
+    return render_template('ai/report_view.html', report=report, show_back_button=True)
 
 
 @ai_bp.route('/report/<int:report_id>/delete', methods=['POST'])

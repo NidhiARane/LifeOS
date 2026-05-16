@@ -15,7 +15,7 @@ user_bp = Blueprint('user', __name__, url_prefix='/user')
 @login_required
 def profile():
     """View user profile"""
-    return render_template('user/profile.html', user=current_user)
+    return render_template('user/profile.html', user=current_user, show_back_button=True)
 
 
 @user_bp.route('/profile/edit', methods=['GET', 'POST'])
@@ -84,7 +84,7 @@ def edit_profile():
 @login_required
 def settings():
     """User settings page"""
-    return render_template('user/settings.html', user=current_user)
+    return render_template('user/settings.html', user=current_user, show_back_button=True)
 
 
 @user_bp.route('/change-password', methods=['GET', 'POST'])
@@ -122,7 +122,7 @@ def change_password():
             flash('Failed to change password!', 'error')
             return redirect(url_for('user.change_password'))
 
-    return render_template('user/change_password.html')
+    return render_template('user/change_password.html', show_back_button=True)
 
 
 @user_bp.route('/delete-account', methods=['GET', 'POST'])
@@ -148,7 +148,7 @@ def delete_account():
             flash('Failed to delete account!', 'error')
             return redirect(url_for('user.delete_account'))
 
-    return render_template('user/delete_account.html')
+    return render_template('user/delete_account.html', show_back_button=True)
 
 
 @user_bp.route('/api/profile', methods=['GET'])

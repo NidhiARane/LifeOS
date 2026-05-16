@@ -64,7 +64,7 @@ def users():
 
     users = query.order_by(User.created_at.desc()).paginate(page=page, per_page=20)
 
-    return render_template('admin/users.html', users=users, search=search)
+    return render_template('admin/users.html', users=users, search=search, show_back_button=True)
 
 
 @admin_bp.route('/user/<int:user_id>')
@@ -73,7 +73,7 @@ def users():
 def view_user(user_id):
     """View user details"""
     user = User.query.get_or_404(user_id)
-    return render_template('admin/user_detail.html', user=user)
+    return render_template('admin/user_detail.html', user=user, show_back_button=True)
 
 
 @admin_bp.route('/user/<int:user_id>/toggle-active', methods=['POST'])

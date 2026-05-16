@@ -96,7 +96,8 @@ def expenses():
                          expenses=expenses,
                          categories=categories,
                          selected_category=category_id,
-                         sort_by=sort_by)
+                         sort_by=sort_by,
+                         show_back_button=True)
 
 
 @finance_bp.route('/expense/add', methods=['GET', 'POST'])
