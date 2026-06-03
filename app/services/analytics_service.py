@@ -20,7 +20,9 @@ class AnalyticsService:
         """Get or create user budget"""
         budget = UserBudget.query.filter_by(user_id=user_id).first()
         if not budget:
+            # Ensure metadata timestamps are initialized in case the DB defaults are not applied
             budget = UserBudget(user_id=user_id, monthly_limit=monthly_limit)
+            budget.updated_at = datetime.utcnow()
             db.session.add(budget)
             db.session.commit()
         return budget
@@ -56,10 +58,13 @@ class AnalyticsService:
             if habits:
                 total_completion = 0
                 for habit in habits:
-                    days_active = (datetime.utcnow() - habit.created_at).days + 1
-                    completion = (len(habit.logs) / days_active * 100) if days_active > 0 else 0
+                    # Count logs in the last 30 days (not since habit creation)
+                    recent_logs = [log for log in habit.logs if log.completed_date >= thirty_days_ago]
+                    # Max 1 log per day, so max completion is 100% over 30 days
+                    completion = (len(recent_logs) / 30 * 100) if recent_logs else 0
+                    completion = min(100, completion)  # Cap at 100%
                     total_completion += completion
-                habit_score = total_completion / len(habits)
+                habit_score = min(100, total_completion / len(habits))
 
             # Combined health score
             health_score = (meal_score * 0.5) + (habit_score * 0.5)
@@ -115,7 +120,7 @@ class AnalyticsService:
     def calculate_habit_score(user_id):
         """
         Calculate habit consistency score based on:
-        - Overall completion rates
+        - Overall completion rates in the last 30 days
         - Current streaks
         - Days active
 
@@ -128,12 +133,17 @@ class AnalyticsService:
                 return 50  # Default score if no habits
 
             total_completion = 0
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            
             for habit in habits:
-                days_active = (datetime.utcnow() - habit.created_at).days + 1
-                completion_rate = (len(habit.logs) / days_active * 100) if days_active > 0 else 0
+                # Count logs in the last 30 days (not since habit creation)
+                recent_logs = [log for log in habit.logs if log.completed_date >= thirty_days_ago]
+                # Max 1 log per day, so max completion is 100% over 30 days
+                completion_rate = (len(recent_logs) / 30 * 100) if recent_logs else 0
+                completion_rate = min(100, completion_rate)  # Cap at 100%
                 total_completion += completion_rate
 
-            habit_score = total_completion / len(habits)
+            habit_score = total_completion / len(habits) if habits else 0
             return round(min(100, habit_score), 1)
 
         except Exception as e:
@@ -182,17 +192,24 @@ class AnalyticsService:
 
     @staticmethod
     def get_expense_summary(user_id, days=30):
-        """Get expense summary for last N days"""
+        """Get expense summary for the current month (or last N days if specified)"""
         try:
-            start_date = datetime.utcnow() - timedelta(days=days)
+            # For monthly budget tracking, use current month (1st to today)
+            # Falls back to last N days if not in current month
+            now = datetime.utcnow()
+            current_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            
+            # Get expenses from current month
             expenses = Expense.query.filter_by(user_id=user_id).filter(
-                Expense.expense_date >= start_date
+                Expense.expense_date >= current_month_start
             ).all()
 
             budget = AnalyticsService.get_or_create_budget(user_id)
             total_spent = sum(e.amount for e in expenses)
             remaining = budget.monthly_limit - total_spent
             percentage = (total_spent / budget.monthly_limit * 100) if budget.monthly_limit > 0 else 0
+            # Cap percentage at 100% for display (show "Over Budget" in status if exceeds)
+            capped_percentage = min(percentage, 100)
 
             # Category breakdown
             categories = {}
@@ -206,10 +223,11 @@ class AnalyticsService:
                 'total_spent': round(total_spent, 2),
                 'budget_limit': budget.monthly_limit,
                 'remaining': round(max(0, remaining), 2),
-                'percentage': round(percentage, 1),
+                'percentage': round(capped_percentage, 1),
+                'actual_percentage': round(percentage, 1),
                 'expense_count': len(expenses),
                 'categories': categories,
-                'status': 'Within Budget' if total_spent <= budget.monthly_limit else 'Over Budget'
+                'status': 'Within Budget' if total_spent <= budget.monthly_limit else f'Over Budget by ${round(total_spent - budget.monthly_limit, 2)}'
             }
 
         except Exception as e:
@@ -333,7 +351,7 @@ class AnalyticsService:
 
     @staticmethod
     def get_habit_progress(user_id, days=30):
-        """Get habit completion progress"""
+        """Get habit completion progress for the last N days"""
         try:
             habits = Habit.query.filter_by(user_id=user_id).all()
 
@@ -342,17 +360,24 @@ class AnalyticsService:
 
             habit_data = []
             total_completion = 0
+            start_date = datetime.utcnow() - timedelta(days=days)
 
             for habit in habits:
-                days_active = (datetime.utcnow() - habit.created_at).days + 1
-                completion_rate = (len(habit.logs) / days_active * 100) if days_active > 0 else 0
+                # Count logs in the last N days (not since habit creation)
+                recent_logs = [log for log in habit.logs if log.completed_date >= start_date]
+                
+                # Calculate completion rate as percentage of days in the period
+                # Max 1 log per day, so max completion is 100% over N days
+                completion_rate = (len(recent_logs) / days * 100) if days > 0 else 0
+                # Cap at 100% to avoid excessive percentages
+                completion_rate = min(100, completion_rate)
 
                 habit_data.append({
                     'name': habit.name,
                     'completion_rate': round(completion_rate, 1),
                     'current_streak': habit.current_streak,
                     'longest_streak': habit.longest_streak,
-                    'days_active': days_active
+                    'days_active': (datetime.utcnow() - habit.created_at).days + 1
                 })
 
                 total_completion += completion_rate
@@ -361,7 +386,7 @@ class AnalyticsService:
 
             return {
                 'habits': habit_data,
-                'average_completion': round(avg_completion, 1),
+                'average_completion': round(min(100, avg_completion), 1),
                 'total_habits': len(habits)
             }
 

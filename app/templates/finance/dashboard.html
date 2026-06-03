@@ -148,9 +148,10 @@
                 <div class="card-body">
                     {% if suggestions %}
                         {% for suggestion in suggestions %}
-                        <div class="alert alert-{{ 'danger' if suggestion.severity == 'warning' else suggestion.severity }} mb-3">
+                        <div class="alert alert-{{ 'danger' if suggestion.severity == 'warning' else suggestion.severity }} alert-dismissible fade show alert-persistent mb-3" role="alert">
                             <strong>{{ suggestion.title }}</strong><br>
                             {{ suggestion.message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                         {% endfor %}
                     {% else %}

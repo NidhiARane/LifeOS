@@ -40,15 +40,25 @@ function initializeFormValidation() {
 
 /**
  * Close alerts after delay
+ * Only closes alerts that have the 'alert-dismissible' class and are NOT persistent suggestions
  */
 function closeAlertsAfterDelay() {
-    const alerts = document.querySelectorAll('.alert');
+    const alerts = document.querySelectorAll('.alert:not(.alert-persistent)');
     alerts.forEach(alert => {
-        setTimeout(() => {
-            const bsAlert = new bootstrap.Alert(alert);
-            // Auto-dismiss after 5 seconds
-            setTimeout(() => bsAlert.close(), 5000);
-        }, 100);
+        // Only auto-close flash messages and temporary alerts, not AI suggestions
+        if (alert.classList.contains('alert-dismissible')) {
+            setTimeout(() => {
+                // Check if alert is a flash message (from Flask flash())
+                const isFlashMessage = alert.parentElement?.classList.contains('container-fluid') ||
+                                       alert.parentElement?.classList.contains('container');
+
+                if (isFlashMessage) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    // Auto-dismiss flash messages after 5 seconds
+                    setTimeout(() => bsAlert.close(), 5000);
+                }
+            }, 100);
+        }
     });
 }
 

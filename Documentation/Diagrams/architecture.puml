@@ -1,0 +1,38 @@
+@startuml
+
+package "Frontend Layer" {
+[HTML]
+[CSS]
+[BootStrap]
+[JavaScript]
+[Chart.js]
+}
+
+package "Backend Layer" {
+[Flask APIs]
+[Authentication Service]
+[Expense Service]
+[Analytics Service]
+[AI Recommendation Engine]
+}
+
+database "SQLite Database"
+
+cloud "Gemini API"
+
+[HTML] --> [Flask APIs]
+[CSS] --> [Flask APIs]
+[JavaScript] --> [Flask APIs]
+
+[Flask APIs] --> [Authentication Service]
+[Flask APIs] --> [Expense Service]
+[Flask APIs] --> [Analytics Service]
+[Flask APIs] --> [AI Recommendation Engine]
+
+[Authentication Service] --> "SQLite Database"
+[Expense Service] --> "SQLite Database"
+[Analytics Service] --> "SQLite Database"
+
+[AI Recommendation Engine] --> "Gemini API"
+
+@enduml

@@ -4,9 +4,11 @@ Handles user profile management, settings, and account operations
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
+from datetime import datetime
 from app import db
 from app.models.user import User
 from app.utils.validators import validate_email
+from app.services.analytics_service import AnalyticsService
 
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
@@ -32,14 +34,29 @@ def edit_profile():
         current_user.phone = data.get('phone', '').strip()
         current_user.location = data.get('location', '').strip()
 
-        # Update goals if provided
-        if data.get('monthly_budget'):
+        # Update monthly budget if provided and sync to UserBudget
+        mb_value = data.get('monthly_budget')
+        if mb_value:
             try:
-                current_user.monthly_budget = float(data.get('monthly_budget'))
+                current_user.monthly_budget = float(mb_value)
             except ValueError:
                 flash('Invalid budget amount!', 'error')
                 return redirect(url_for('user.edit_profile'))
 
+            # Also sync to UserBudget model to keep both sources synchronized
+            try:
+                budget = AnalyticsService.get_or_create_budget(current_user.id, monthly_limit=current_user.monthly_budget)
+                budget.monthly_limit = current_user.monthly_budget
+                budget.updated_at = datetime.utcnow()
+                db.session.add(budget)
+            except Exception:
+                try:
+                    from flask import current_app
+                    current_app.logger.exception('Failed to sync UserBudget in edit_profile')
+                except Exception:
+                    pass
+
+        # Other numeric goal updates
         if data.get('weight_goal'):
             try:
                 current_user.weight_goal = float(data.get('weight_goal'))
@@ -68,6 +85,7 @@ def edit_profile():
                 flash('Invalid protein goal!', 'error')
                 return redirect(url_for('user.edit_profile'))
 
+        # Commit all changes once (user fields + budget)
         try:
             db.session.commit()
             flash('Profile updated successfully!', 'success')
@@ -162,7 +180,7 @@ def api_get_profile():
 @login_required
 def api_update_profile():
     """API endpoint to update user profile"""
-    data = request.get_json()
+    data = request.get_json() or {}
 
     # Update allowed fields
     if 'first_name' in data:
@@ -176,15 +194,44 @@ def api_update_profile():
     if 'location' in data:
         current_user.location = data['location']
     if 'monthly_budget' in data:
-        current_user.monthly_budget = float(data['monthly_budget'])
+        try:
+            current_user.monthly_budget = float(data['monthly_budget'])
+        except (ValueError, TypeError):
+            return jsonify({'message': 'Invalid monthly_budget value'}), 400
+
+        # Also sync to UserBudget model when budget is updated via API
+        try:
+            budget = AnalyticsService.get_or_create_budget(current_user.id, monthly_limit=current_user.monthly_budget)
+            budget.monthly_limit = current_user.monthly_budget
+            budget.updated_at = datetime.utcnow()
+            db.session.add(budget)
+        except Exception:
+            try:
+                from flask import current_app
+                current_app.logger.exception('Failed to sync UserBudget in api_update_profile')
+            except Exception:
+                pass
+
     if 'weight_goal' in data:
-        current_user.weight_goal = float(data['weight_goal'])
+        try:
+            current_user.weight_goal = float(data['weight_goal'])
+        except (ValueError, TypeError):
+            return jsonify({'message': 'Invalid weight_goal value'}), 400
     if 'savings_goal' in data:
-        current_user.savings_goal = float(data['savings_goal'])
+        try:
+            current_user.savings_goal = float(data['savings_goal'])
+        except (ValueError, TypeError):
+            return jsonify({'message': 'Invalid savings_goal value'}), 400
     if 'daily_calorie_goal' in data:
-        current_user.daily_calorie_goal = int(data['daily_calorie_goal'])
+        try:
+            current_user.daily_calorie_goal = int(data['daily_calorie_goal'])
+        except (ValueError, TypeError):
+            return jsonify({'message': 'Invalid daily_calorie_goal value'}), 400
     if 'daily_protein_goal' in data:
-        current_user.daily_protein_goal = float(data['daily_protein_goal'])
+        try:
+            current_user.daily_protein_goal = float(data['daily_protein_goal'])
+        except (ValueError, TypeError):
+            return jsonify({'message': 'Invalid daily_protein_goal value'}), 400
 
     try:
         db.session.commit()

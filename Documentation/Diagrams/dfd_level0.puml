@@ -1,0 +1,16 @@
+@startuml
+
+actor User
+actor Admin
+
+rectangle "LifeOS Web Application" {
+
+}
+
+database "SQLite Database" as DB
+
+User --> "LifeOS Web Application" : Manage Activities
+Admin --> "LifeOS Web Application" : Manage Users
+"LifeOS Web Application" --> DB : Store/Retrieve Data
+
+@enduml

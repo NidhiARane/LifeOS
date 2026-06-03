@@ -121,6 +121,15 @@ def manage_budget():
             budget.alert_threshold = alert_threshold
             budget.updated_at = datetime.utcnow()
 
+            # Keep the user's profile monthly_budget synchronized with the UserBudget
+            try:
+                # current_user is the logged-in User instance provided by flask-login
+                current_user.monthly_budget = monthly_limit
+            except Exception:
+                # If for some reason current_user is not available or assignment fails,
+                # proceed with committing the budget change only to avoid blocking users.
+                pass
+
             db.session.commit()
             flash('Budget updated successfully!', 'success')
             return redirect(url_for('analytics.dashboard'))

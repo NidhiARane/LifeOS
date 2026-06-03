@@ -1,0 +1,37 @@
+@startuml
+
+left to right direction
+
+actor User
+actor Admin
+
+Admin --|> User
+
+rectangle "LifeOS System" {
+
+usecase "Register" as UC1
+usecase "Login" as UC2
+usecase "Manage Expenses" as UC3
+usecase "Track Meals" as UC4
+usecase "Track Habits" as UC5
+usecase "Manage Goals" as UC6
+usecase "Generate Reports" as UC7
+usecase "View Dashboard" as UC8
+usecase "Receive AI Suggestions" as UC9
+usecase "Manage Users" as UC10
+
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC7
+User --> UC8
+User --> UC9
+
+Admin --> UC10
+
+@enduml

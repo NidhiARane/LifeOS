@@ -105,7 +105,7 @@ Provide helpful, personalized advice based on the user's data. Be concise but he
             # Group by category
             categories = {}
             for expense in expenses:
-                cat = expense.category or 'Other'
+                cat = expense.category.name if expense.category else 'Other'
                 categories[cat] = categories.get(cat, 0) + expense.amount
 
             top_categories = sorted(categories.items(), key=lambda x: x[1], reverse=True)[:5]
@@ -146,12 +146,16 @@ Provide helpful, personalized advice based on the user's data. Be concise but he
             avg_calories = sum(m.calories for m in meals) / len(meals) if meals else 0
             avg_protein = sum(m.protein for m in meals) / len(meals) if meals else 0
 
-            # Calculate habit consistency
+            # Calculate habit consistency based on last 30 days
             avg_consistency = 0
             if habits:
+                thirty_days_ago = datetime.utcnow() - timedelta(days=30)
                 for habit in habits:
-                    days_since = (datetime.utcnow() - habit.created_at).days + 1
-                    consistency = (len(habit.logs) / days_since) * 100 if days_since > 0 else 0
+                    # Count logs in the last 30 days (not since habit creation)
+                    recent_logs = [log for log in habit.logs if log.completed_date >= thirty_days_ago]
+                    # Max 1 log per day, so max completion is 100% over 30 days
+                    consistency = (len(recent_logs) / 30 * 100) if recent_logs else 0
+                    consistency = min(100, consistency)  # Cap at 100%
                     avg_consistency += consistency
                 avg_consistency = avg_consistency / len(habits)
 
@@ -160,7 +164,7 @@ Provide helpful, personalized advice based on the user's data. Be concise but he
                 'avg_daily_protein': round(avg_protein, 1),
                 'meals_logged': len(meals),
                 'active_habits': len([h for h in habits if h.is_active]),
-                'habit_consistency': round(avg_consistency, 1),
+                'habit_consistency': round(min(100, avg_consistency), 1),
                 'health_status': 'Good' if avg_consistency > 70 else 'Fair' if avg_consistency > 40 else 'Needs Improvement'
             }
 
@@ -259,9 +263,14 @@ Provide helpful, personalized advice based on the user's data. Be concise but he
                 return {'total_habits': 0, 'habits': []}
 
             habit_analysis = []
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            
             for habit in habits:
-                days_active = (datetime.utcnow() - habit.created_at).days + 1
-                completion_rate = (len(habit.logs) / days_active * 100) if days_active > 0 else 0
+                # Count logs in the last 30 days (not since habit creation)
+                recent_logs = [log for log in habit.logs if log.completed_date >= thirty_days_ago]
+                # Max 1 log per day, so max completion is 100% over 30 days
+                completion_rate = (len(recent_logs) / 30 * 100) if recent_logs else 0
+                completion_rate = min(100, completion_rate)  # Cap at 100%
 
                 habit_analysis.append({
                     'name': habit.name,
@@ -269,13 +278,13 @@ Provide helpful, personalized advice based on the user's data. Be concise but he
                     'longest_streak': habit.longest_streak,
                     'completion_rate': round(completion_rate, 1),
                     'status': 'Excellent' if completion_rate > 80 else 'Good' if completion_rate > 60 else 'Fair' if completion_rate > 40 else 'Needs Work',
-                    'days_active': days_active
+                    'days_active': (datetime.utcnow() - habit.created_at).days + 1
                 })
 
             return {
                 'total_habits': len(habits),
                 'habits': habit_analysis,
-                'average_completion': round(sum(h['completion_rate'] for h in habit_analysis) / len(habit_analysis), 1)
+                'average_completion': round(min(100, sum(h['completion_rate'] for h in habit_analysis) / len(habit_analysis)), 1)
             }
 
         except Exception as e:

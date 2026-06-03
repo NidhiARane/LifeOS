@@ -1,0 +1,64 @@
+@startuml
+
+start
+
+:User/Admin Accesses LifeOS Web Application;
+
+:Enter Login Credentials;
+
+:Authentication & Validation;
+
+if (Credentials Valid?) then (Yes)
+
+    :Load Personalized Dashboard;
+
+    if (Admin User?) then (Yes)
+
+        :Access Administrative Controls;
+        :Manage Users and Monitor Activities;
+
+    else (No)
+
+        :Access User Functionalities;
+
+    endif
+
+    fork
+
+        :Manage Expenses and Budgets;
+
+    fork again
+
+        :Track Meals and Nutrition;
+
+    fork again
+
+        :Track Habits and Goals;
+
+    end fork
+
+    :Validate User Inputs;
+
+    :Store and Update Records in SQLite Database;
+
+    :Analytics Engine Processes User Data;
+
+    :Calculate Life Score;
+
+    :Generate AI Recommendations and Insights;
+
+    :Update Dashboard Visualizations and Reports;
+
+    :Display Notifications and Suggestions;
+
+    :Logout from System;
+
+else (No)
+
+    :Display Authentication Error Message;
+
+endif
+
+stop
+
+@enduml

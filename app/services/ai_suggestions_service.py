@@ -27,19 +27,31 @@ class AISuggestionsService:
             trends = FinanceService.get_spending_trends(user_id, months=3)
             category_breakdown = FinanceService.get_category_breakdown(user_id)
 
-            # Analyze spending patterns
-            if trends:
-                avg_spending = sum(t['total'] for t in trends) / len(trends)
-                current_month = trends[-1]['total']
+            # Analyze spending patterns - improved to work with minimal data
+            if trends and len(trends) > 0:
+                # Filter out zero values for better average
+                non_zero_spending = [t['total'] for t in trends if t['total'] > 0]
 
-                # Suggest if spending is above average
-                if current_month > avg_spending * 1.2:
-                    suggestions.append({
-                        'type': 'spending_spike',
-                        'title': 'High Spending Detected',
-                        'message': f'Your spending is {((current_month / avg_spending - 1) * 100):.1f}% above your average. Consider reviewing your expenses.',
-                        'severity': 'warning'
-                    })
+                if non_zero_spending:
+                    avg_spending = sum(non_zero_spending) / len(non_zero_spending)
+                    current_month = trends[-1]['total']
+
+                    # Suggest if spending is above average (only if we have data)
+                    if current_month > 0 and avg_spending > 0 and current_month > avg_spending * 1.2:
+                        suggestions.append({
+                            'type': 'spending_spike',
+                            'title': 'High Spending Detected',
+                            'message': f'Your spending is {((current_month / avg_spending - 1) * 100):.1f}% above your average. Consider reviewing your expenses.',
+                            'severity': 'warning'
+                        })
+                    elif current_month > 0 and avg_spending > 0:
+                        # Add positive feedback if spending is normal
+                        suggestions.append({
+                            'type': 'spending_normal',
+                            'title': 'On Track',
+                            'message': f'Your spending is normal. You\'ve spent ${current_month:.2f} this month, consistent with your habits.',
+                            'severity': 'success'
+                        })
 
             # Analyze category spending
             if category_breakdown:
@@ -48,7 +60,7 @@ class AISuggestionsService:
 
                 if top_category[1] > 0:
                     total_spending = sum(category_breakdown.values())
-                    percentage = (top_category[1] / total_spending) * 100
+                    percentage = (top_category[1] / total_spending) * 100 if total_spending > 0 else 0
 
                     if percentage > 40:
                         suggestions.append({
@@ -57,6 +69,15 @@ class AISuggestionsService:
                             'message': f'{top_category[0]} accounts for {percentage:.1f}% of your spending. Look for ways to optimize.',
                             'severity': 'info'
                         })
+            else:
+                # No spending data yet - provide helpful message
+                if not suggestions:
+                    suggestions.append({
+                        'type': 'no_data',
+                        'title': 'Get Started',
+                        'message': 'Log more expenses to get personalized recommendations and insights about your spending patterns.',
+                        'severity': 'info'
+                    })
 
             return suggestions
         except Exception as e:

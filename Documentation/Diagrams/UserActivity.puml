@@ -1,0 +1,60 @@
+@startuml
+
+start
+
+:User/Admin Login;
+
+:Authentication Successful;
+
+:Open Dashboard;
+
+repeat
+
+    :Select Activity Module;
+
+    if (Expense Management?) then (Yes)
+
+        :Add / Edit / Delete Expense;
+        :Validate Expense Data;
+        :Store Expense Record;
+
+    elseif (Meal Tracking?) then (Yes)
+
+        :Log Meals and Nutrition Data;
+        :Validate Nutritional Information;
+        :Store Meal Records;
+
+    elseif (Habit & Goal Tracking?) then (Yes)
+
+        :Create or Update Habits and Goals;
+        :Track Habit Completion;
+        :Update Progress and Streaks;
+
+    endif
+
+    :Update SQLite Database;
+
+    :Analytics Engine Processes Updated Data;
+
+    :Recalculate Financial, Health, and Habit Scores;
+
+    :Generate Updated Life Score;
+
+    :Generate AI Recommendations and Insights;
+
+    :Refresh Dashboard Charts and Reports;
+
+    if (Admin User?) then (Yes)
+
+        :Monitor Users and System Activities;
+        :Manage User Accounts;
+
+    endif
+
+repeat while (More Activities?) is (Yes)
+
+:Logout;
+
+stop
+
+@enduml

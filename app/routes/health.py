@@ -96,19 +96,23 @@ def habits_dashboard():
     """Display habits dashboard"""
     habits = Habit.query.filter_by(user_id=current_user.id).all()
 
-    # Calculate consistency scores
+    # Calculate consistency scores based on last 30 days
     habit_stats = []
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    
     for habit in habits:
-        total_logs = len(habit.logs)
+        # Count logs in the last 30 days (not all time)
+        recent_logs = [log for log in habit.logs if log.completed_date >= thirty_days_ago]
         days_since_created = (datetime.utcnow() - habit.created_at).days + 1
-
-        consistency_score = 0
-        if days_since_created > 0:
-            consistency_score = (total_logs / days_since_created) * 100
+        
+        # Calculate consistency as percentage of days in 30-day period
+        # Max 1 log per day, so max completion is 100% over 30 days
+        consistency_score = (len(recent_logs) / 30 * 100) if recent_logs else 0
+        consistency_score = min(100, consistency_score)  # Cap at 100%
 
         habit_stats.append({
             'habit': habit,
-            'total_logs': total_logs,
+            'total_logs': len(recent_logs),
             'consistency_score': round(consistency_score, 2),
             'days_since_created': days_since_created
         })
@@ -221,7 +225,19 @@ def goals_dashboard():
             categorized_goals[category] = []
         categorized_goals[category].append(goal)
 
-    return render_template('health/goals.html', categorized_goals=categorized_goals, goals=goals)
+    # Calculate average progress server-side to avoid template scoping quirks
+    avg_progress = 0
+    if goals:
+        total = 0
+        for goal in goals:
+            try:
+                total += float(goal.get_progress_percentage())
+            except Exception:
+                # If any goal reports invalid progress, treat it as 0 for averaging
+                total += 0
+        avg_progress = round(total / len(goals), 0)
+
+    return render_template('health/goals.html', categorized_goals=categorized_goals, goals=goals, avg_progress=avg_progress)
 
 
 @health_bp.route('/goal/create', methods=['GET', 'POST'])

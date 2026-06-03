@@ -1,0 +1,42 @@
+@startuml
+
+left to right direction
+
+actor User
+actor Admin
+
+rectangle "Authentication & User Management" as Auth
+rectangle "Expense & Budget Management" as Expense
+rectangle "Meal & Nutrition Tracking" as Meal
+rectangle "Habit & Goal Tracking" as Habit
+rectangle "Analytics & AI Recommendation Engine" as Analytics
+
+database "SQLite Database" as DB
+
+' User interactions
+User --> Auth
+User --> Expense
+User --> Meal
+User --> Habit
+User --> Analytics
+
+' Admin interactions
+Admin --> Auth
+Admin --> Expense
+Admin --> Meal
+Admin --> Habit
+Admin --> Analytics
+
+' Database interactions
+Auth --> DB
+Expense --> DB
+Meal --> DB
+Habit --> DB
+Analytics --> DB
+
+' Module interactions with analytics
+Expense --> Analytics
+Meal --> Analytics
+Habit --> Analytics
+
+@enduml

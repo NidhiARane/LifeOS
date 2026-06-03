@@ -22,13 +22,15 @@
                 <div class="card-body">
                     {% if suggestions %}
                         {% for suggestion in suggestions %}
-                        <div class="alert alert-{{ suggestion.severity }} mb-3">
+                        <div class="alert alert-{{ suggestion.severity }} alert-dismissible fade show alert-persistent mb-3" role="alert">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
                                     {% if suggestion.severity == 'warning' %}
                                         <i class="fas fa-exclamation-triangle fa-lg"></i>
                                     {% elif suggestion.severity == 'danger' %}
                                         <i class="fas fa-exclamation-circle fa-lg"></i>
+                                    {% elif suggestion.severity == 'success' %}
+                                        <i class="fas fa-check-circle fa-lg"></i>
                                     {% else %}
                                         <i class="fas fa-info-circle fa-lg"></i>
                                     {% endif %}
@@ -37,6 +39,7 @@
                                     <h6 class="alert-heading mb-1">{{ suggestion.title }}</h6>
                                     <p class="mb-0">{{ suggestion.message }}</p>
                                 </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </div>
                         {% endfor %}

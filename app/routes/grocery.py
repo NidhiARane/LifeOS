@@ -75,19 +75,37 @@ def add_item():
     if request.method == 'POST':
         data = request.form
 
+        # Robust parsing: allow users to enter '2 kg' in the quantity field
+        def _parse_quantity_field(raw):
+            raw = (raw or '').strip()
+            try:
+                return float(raw), None
+            except ValueError:
+                import re
+                m = re.match(r'^([0-9]*\.?[0-9]+)\s*(.*)$', raw)
+                if m:
+                    q = float(m.group(1))
+                    unit_part = (m.group(2) or '').strip()
+                    return q, unit_part or None
+                raise
+
         try:
-            quantity = float(data.get('quantity', 1))
+            raw_q = data.get('quantity', '1')
+            quantity, unit_from_q = _parse_quantity_field(raw_q)
             price = float(data.get('price', 0))
-        except ValueError:
+        except Exception:
             flash('Invalid quantity or price!', 'error')
             return redirect(url_for('grocery.add_item'))
 
         try:
+            unit_field = data.get('unit', '').strip()
+            unit = unit_field or unit_from_q or ''
+
             item = GroceryService.create_grocery_item(
                 user_id=current_user.id,
                 name=data.get('name', '').strip(),
                 quantity=quantity,
-                unit=data.get('unit', '').strip(),
+                unit=unit,
                 price=price,
                 category=data.get('category', '').strip(),
                 description=data.get('description', '').strip()
@@ -115,19 +133,37 @@ def edit_item(item_id):
     if request.method == 'POST':
         data = request.form
 
+        # Robust parsing for edit as well (accept '2 kg' in quantity)
+        def _parse_quantity_field(raw):
+            raw = (raw or '').strip()
+            try:
+                return float(raw), None
+            except ValueError:
+                import re
+                m = re.match(r'^([0-9]*\.?[0-9]+)\s*(.*)$', raw)
+                if m:
+                    q = float(m.group(1))
+                    unit_part = (m.group(2) or '').strip()
+                    return q, unit_part or None
+                raise
+
         try:
-            quantity = float(data.get('quantity', item.quantity))
+            raw_q = data.get('quantity', str(item.quantity))
+            quantity, unit_from_q = _parse_quantity_field(raw_q)
             price = float(data.get('price', item.price))
-        except ValueError:
+        except Exception:
             flash('Invalid quantity or price!', 'error')
             return redirect(url_for('grocery.edit_item', item_id=item_id))
 
         try:
+            unit_field = data.get('unit', '').strip()
+            unit = unit_field or unit_from_q or item.unit or ''
+
             GroceryService.update_grocery_item(
                 item_id,
                 name=data.get('name', '').strip(),
                 quantity=quantity,
-                unit=data.get('unit', '').strip(),
+                unit=unit,
                 price=price,
                 category=data.get('category', '').strip(),
                 description=data.get('description', '').strip()

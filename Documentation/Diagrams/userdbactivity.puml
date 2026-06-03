@@ -1,0 +1,49 @@
+@startuml
+
+start
+
+:User Accesses System;
+
+if (New User?) then (Yes)
+
+:Register Account;
+
+:Validate User Details;
+
+:Create User Record in Database;
+
+else (No)
+
+:Enter Login Credentials;
+
+:Validate Credentials;
+
+endif
+
+if (Authentication Successful?) then (Yes)
+
+:Load User Dashboard;
+
+:Access System Modules;
+
+:Update User Activities and Profile;
+
+:Store Updated Data in Database;
+
+if (Admin User?) then (Yes)
+
+:Manage Users and Monitor System;
+
+endif
+
+:Logout;
+
+else (No)
+
+:Display Authentication Error;
+
+endif
+
+stop
+
+@enduml

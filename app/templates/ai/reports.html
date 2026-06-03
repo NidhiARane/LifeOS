@@ -295,15 +295,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     `;
 
-                    // Insert alert at the top of container-fluid
-                    const container = document.querySelector('.container-fluid');
-                    if (container) {
-                        // Insert as first child
-                        container.insertAdjacentElement('afterbegin', alertDiv);
-                    } else {
-                        // Fallback: insert at beginning of body
-                        document.body.insertAdjacentElement('afterbegin', alertDiv);
-                    }
+                    // Insert alert at the top of the page content container (avoid navbar's container-fluid)
+                    const container = document.querySelector('main .container-fluid') || document.querySelector('main') || document.body;
+                    // Insert as first child of the chosen container
+                    container.insertAdjacentElement('afterbegin', alertDiv);
 
                     // Redirect after 2 seconds
                     setTimeout(() => {

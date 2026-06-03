@@ -176,7 +176,7 @@ class FinanceService:
             'budget': budget,
             'spent': monthly_total,
             'remaining': budget - monthly_total,
-            'percentage_used': (monthly_total / budget * 100) if budget > 0 else 0,
+            'percentage_used': min(100, (monthly_total / budget * 100)) if budget > 0 else 0,
             'is_over_budget': monthly_total > budget
         }
 

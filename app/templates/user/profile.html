@@ -96,8 +96,8 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted">Monthly Budget</label>
                             <p class="mb-0 h6">
-                                {% if current_user.monthly_budget %}
-                                    ${{ "%.2f"|format(current_user.monthly_budget) }}
+                                {% if current_user.effective_monthly_budget %}
+                                    ${{ "%.2f"|format(current_user.effective_monthly_budget) }}
                                 {% else %}
                                     Not set
                                 {% endif %}

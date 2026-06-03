@@ -75,7 +75,7 @@
                             <ul class="mb-0 small">
                                 <li><strong>Monthly Limit:</strong> ${{ budget.monthly_limit }}</li>
                                 <li><strong>Alert at:</strong> {{ budget.alert_threshold }}% (${{ (budget.monthly_limit * budget.alert_threshold / 100) | round(2) }})</li>
-                                <li><strong>Last Updated:</strong> {{ budget.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</li>
+                                <li><strong>Last Updated:</strong> {{ budget.updated_at.strftime('%B %d, %Y at %I:%M %p') if budget.updated_at else 'Never' }}</li>
                             </ul>
                         </div>
 

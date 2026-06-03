@@ -105,11 +105,11 @@
                         <div class="col-md-6">
                             <label class="text-muted small">Monthly Budget</label>
                             <p class="mb-0 h6">
-                                {% if user.monthly_budget %}
-                                    ${{ "%.2f"|format(user.monthly_budget) }}
-                                {% else %}
-                                    Not set
-                                {% endif %}
+                                        {% if user.effective_monthly_budget %}
+                                            ${{ "%.2f"|format(user.effective_monthly_budget) }}
+                                        {% else %}
+                                            Not set
+                                        {% endif %}
                             </p>
                         </div>
                         <div class="col-md-6">

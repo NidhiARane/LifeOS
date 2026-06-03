@@ -1,0 +1,31 @@
+@startuml
+
+start
+
+:User Login;
+
+:Open Expense Module;
+
+:Enter Expense Details;
+
+if (Valid Input?) then (Yes)
+
+:Save Expense to Database;
+
+:Update Dashboard Analytics;
+
+:Recalculate Life Score;
+
+:Generate AI Recommendations;
+
+:Display Updated Dashboard;
+
+else (No)
+
+:Display Validation Error;
+
+endif
+
+stop
+
+@enduml

@@ -33,11 +33,11 @@
                         <div>
                             <p class="text-muted mb-1 small">Monthly Budget</p>
                             <h4 class="mb-0">
-                                {% if current_user.monthly_budget %}
-                                    ${{ "%.2f"|format(current_user.monthly_budget) }}
-                                {% else %}
-                                    Not Set
-                                {% endif %}
+                                    {% if current_user.effective_monthly_budget %}
+                                            ${{ "%.2f"|format(current_user.effective_monthly_budget) }}
+                                        {% else %}
+                                            Not Set
+                                        {% endif %}
                             </h4>
                         </div>
                         <i class="fas fa-wallet fa-2x text-primary opacity-50"></i>

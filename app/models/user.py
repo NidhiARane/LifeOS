@@ -73,6 +73,19 @@ class User(UserMixin, db.Model):
             return f"{self.first_name} {self.last_name}"
         return self.username
 
+    @property
+    def effective_monthly_budget(self):
+        """Return the authoritative monthly budget for the user.
+
+        Prefer the UserBudget relationship (if present) otherwise fall back to the
+        legacy users.monthly_budget column. This helps when migrating from the
+        old column to the dedicated UserBudget model.
+        """
+        # `budget` is provided via backref on UserBudget (uselist=False)
+        if hasattr(self, 'budget') and self.budget:
+            return self.budget.monthly_limit
+        return self.monthly_budget
+
     def update_last_login(self):
         """Update the last login timestamp"""
         self.last_login = datetime.utcnow()
