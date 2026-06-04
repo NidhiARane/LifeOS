@@ -175,11 +175,11 @@
                                     <div class="row g-2 mb-3">
                                         <div class="col-6">
                                             <small class="text-muted d-block">Current Value</small>
-                                            <strong>{{ goal.current_value }} {{ goal.unit }}</strong>
+                                            <strong>{{ goal.current_value }}{% if goal.unit %} {{ goal.unit }}{% endif %}</strong>
                                         </div>
                                         <div class="col-6">
                                             <small class="text-muted d-block">Target Value</small>
-                                            <strong>{{ goal.target_value }} {{ goal.unit }}</strong>
+                                            <strong>{{ goal.target_value }}{% if goal.unit %} {{ goal.unit }}{% endif %}</strong>
                                         </div>
                                     </div>
 
